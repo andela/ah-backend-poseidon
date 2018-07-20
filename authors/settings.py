@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'authors.apps.authentication',
+    'authors.apps.article',
     'authors.apps.core',
     'authors.apps.profiles',
     'rest_framework_swagger',
@@ -91,7 +92,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'ahdb'),
         'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('PASSWORD', '1460'),
+        'PASSWORD': os.environ.get('PASSWORD', ''),
         'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
