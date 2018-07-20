@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'authors.apps.authentication',
+    'authors.apps.article',
     'authors.apps.core',
     'authors.apps.profiles',
     'rest_framework_swagger',

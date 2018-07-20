@@ -6,8 +6,10 @@ services:
 before_script:
 - pip3 install -r requirements.txt
 - psql -c 'create database ahdb;' -U postgres
+- python manage.py makemigrations
 - python manage.py migrate
 script:
-- coverage run --source='authors/apps' manage.py test && coverage report
+- coverage run --source='authors' manage.py test
+- coverage report
 after_success:
 - coveralls
