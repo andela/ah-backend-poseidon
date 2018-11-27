@@ -1,5 +1,6 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
+[![Build Status](https://travis-ci.org/andela/ah-backend-poseidon.svg?branch=develop)](https://travis-ci.org/andela/ah-backend-poseidon)
 
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
