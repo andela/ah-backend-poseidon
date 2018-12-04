@@ -8,7 +8,6 @@ before_script:
 - psql -c 'create database ahdb;' -U postgres
 - python manage.py migrate
 script:
-- coverage run --source='authors' manage.py test
-- coverage report
+- coverage run --source='authors/apps' manage.py test && coverage report
 after_success:
 - coveralls

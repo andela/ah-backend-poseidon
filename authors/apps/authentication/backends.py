@@ -36,7 +36,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
     def authenticate_credentials(self, request, token):
         """
-        This method checks the token sent in a request for valid user credentials.
+        check the token sent in a request for valid user credentials.
         """
         try:
             payload = jwt.decode(token, settings.SECRET_KEY)
