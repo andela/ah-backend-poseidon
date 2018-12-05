@@ -95,4 +95,4 @@ class AccountTests(APITestCase):
         response = self.client.post('/api/users/login', data, format='json')
         self.addcredentials(response.data['token'])
         response = self.client.put('/api/user/', format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK) 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
