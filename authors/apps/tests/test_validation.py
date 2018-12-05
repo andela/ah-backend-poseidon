@@ -1,33 +1,12 @@
-from django.urls import reverse
+from .base import BaseTestCase
 from rest_framework import status
-from rest_framework.test import APITestCase
 from authors.apps.authentication.models import User
 from . import (new_user, data2, invalid_email, invalid_password,
                short_password, dup_username, user_login)
 
 
-class AccountTests(APITestCase):
+class AccountTests(BaseTestCase):
     """handles user registration tests"""
-
-    def add_credentials(self, response):
-        """adds authentication credentials in the request header"""
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response)
-
-    def register_user(self, user_data):
-        """register new user"""
-        url = reverse('authentication')
-        return self.client.post(url, user_data, format='json')
-
-    def login_user(self, user_data):
-        """login existing user"""
-        url = reverse('login')
-        return self.client.post(url, user_data, format='json')
-
-    def user_access(self):
-        """signup and login user"""
-        self.register_user(new_user)
-        response = self.login_user(user_login)
-        self.add_credentials(response.data['token'])
 
     def test_new_user_registration(self):
         """check if new user can be registered"""
@@ -115,7 +94,7 @@ class AccountTests(APITestCase):
                       'user with this email already exists.')
 
     def test_duplicate_username(self):
-        "user with same username provided exists"""
+        """user with same username provided exists"""
         self.register_user(new_user)
         response = self.register_user(dup_username)
         self.assertIn(response.data["errors"]["username"][0],
