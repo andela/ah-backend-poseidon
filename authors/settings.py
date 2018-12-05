@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'ahdb'),
         'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('PASSWORD', 'moschinogab19'),
+        'PASSWORD': os.environ.get('PASSWORD', '1460'),
         'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
@@ -148,3 +148,8 @@ REST_FRAMEWORK = {
     ),
 }
 django_heroku.settings(locals())
+
+EMAIL_HOST = 'smtp.mailtrap.io'
+EMAIL_HOST_USER = '6fd3a38567fe9e'
+EMAIL_HOST_PASSWORD = '0006e3668df59c'
+EMAIL_PORT = 2525
