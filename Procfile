@@ -1,2 +1,2 @@
 web: gunicorn authors.wsgi
-release: python manage.py makemigrations authentication --noinput && python manage.py migrate authentication --noinput
+release: python manage.py makemigrations --noinput && python manage.py migrate --noinput
