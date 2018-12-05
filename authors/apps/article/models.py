@@ -40,6 +40,8 @@ class Article(models.Model):
         :param kwargs:
         """
         self.slug = generate_slug(Article, self)
+        # self.created_on = timezone.now()
+        # self.updated_on = timezone.now()
 
         super(Article, self).save(*args, **kwargs)
 
