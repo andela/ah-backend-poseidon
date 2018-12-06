@@ -10,10 +10,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # Ensure passwords are at least 8 characters long, no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.CharField(
+    regex = (r'^[a-zA-Z0-9]+$')
+    password = serializers.RegexField(
+        regex,
         max_length=128,
-        min_length=8, 
-        write_only=True)
+        min_length=8,
+        write_only=True,
+        error_messages={
+            "min_length":
+            "Password should not be less than {min_length} characters.",
+            "invalid":
+            "Password should be alphanuemric (a-z,A_Z,0-9)."
+        })
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
@@ -23,12 +31,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = [
-        'email', 
-        'username', 
-        'password', 
-        'token'
-        ]
+        fields = ['email', 'username', 'password', 'token']
+        extra_kwargs = {
+            "email": {
+                "error_messages": {
+                    "invalid":
+                    "Please enter a valid email in the format xxxx@xxx.xxx"
+                }
+            }
+        }
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
@@ -104,11 +115,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            'email', 
-            'username', 
-            'password'
-                )
+        fields = ('email', 'username', 'password')
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
