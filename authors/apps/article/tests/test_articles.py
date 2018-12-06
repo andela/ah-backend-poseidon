@@ -7,51 +7,14 @@ from rest_framework.test import APIClient
 from rest_framework.utils import json
 
 from authors.apps.article.models import Article
+from authors.apps.article.tests.test_data import TestData
 from authors.apps.authentication.models import User
 
 
-class TestArticle(TestCase):
+class TestArticle(TestCase, TestData):
     """
     test class to contain functions to handle test for the article
     """
-    post_article = {
-        "article": {
-            "title": "Who is he",
-            "description": "He has a bald head",
-            "body": "He has ruled Uganda for over 30 years"
-        }
-    }
-    update_article = {
-        "article": {
-            "title": "Who is he and why is he here",
-            "description": "He has a bald head",
-            "body": "He has ruled Uganda for over 30 years"
-        }
-    }
-    article_missing_data = {
-        "article": {
-            "description": "He has a bald head",
-            "body": "He has ruled Uganda for over 30 years"
-        }
-    }
-
-    def posting_article(self):
-        return self.client.post(
-            "/api/articles/", data=json.dumps(
-                self.post_article), content_type='application/json')
-
-    def slugger(self):
-        self.posting_article()
-
-        response = self.client.get(
-            "/api/articles/", content_type='application/json')
-        data = response.json().get("articles")[0]
-
-        return data["slug"]
-
-    def deleter(self, slug):
-        return self.client.delete(
-            "/api/articles/{0}/".format(slug), content_type='application/json')
 
     def setUp(self):
         """
@@ -76,6 +39,24 @@ class TestArticle(TestCase):
         self.assertIn('token', self.response.data)
         token = self.response.data.get("token", None)
         self.client.credentials(HTTP_AUTHORIZATION="Token {0}".format(token))
+
+    def posting_article(self):
+        return self.client.post(
+            "/api/articles/", data=json.dumps(
+                self.post_article), content_type='application/json')
+
+    def slugger(self):
+        self.posting_article()
+
+        response = self.client.get(
+            "/api/articles/", content_type='application/json')
+        data = response.json().get("articles")[0]
+
+        return data["slug"]
+
+    def deleter(self, slug):
+        return self.client.delete(
+            "/api/articles/{0}/".format(slug), content_type='application/json')
 
     def test_post_new_article(self):
         response = self.posting_article()
