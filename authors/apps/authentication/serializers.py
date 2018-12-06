@@ -2,6 +2,10 @@ from django.contrib.auth import authenticate
 
 from rest_framework import serializers
 
+from django.shortcuts import get_object_or_404
+
+from django.core.mail import send_mail
+
 from .models import User
 
 
@@ -151,3 +155,40 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(allow_blank=False)
+    
+    def validate(self, data):
+        """ 
+        For user to reset thier password the email
+        has to be validate with what is in the database
+        """
+        email = data.get('email', None)
+        if email is None:
+            raise serializers.ValidationError(
+                'An email address is required to log in.'
+            )
+
+        # function to check whether user is in the database
+        # user email entered should be what the user user on registartion
+        # else link wont be sent to the user
+        # This gets the current user token which will later be used for
+        # identifing user.
+        # The token is passed in within the link send to the user email
+        user = get_object_or_404(User, email=email)
+        if email is None:
+            raise serializers.ValidationError(
+                'The email entered is wrong'
+            )
+        recipient = user.email
+        subject = "Authors Heven. Reset your password"
+        token = user.token
+        url = "http://127.0.0.1:8000/api/password-reset/"
+        body = " Click on this link to reset your password {}{}/".format(url, token)
+        send_mail(subject, body, 'from', [
+                  recipient], fail_silently=False)
+        return {
+            'email': user,
+        } 
