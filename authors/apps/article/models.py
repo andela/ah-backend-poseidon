@@ -5,7 +5,6 @@ class to define the structure of the article
 from django.db import models
 
 # Create your models here.
-from django.utils import timezone
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
@@ -22,8 +21,10 @@ class Article(models.Model):
                                    error_messages={"required": "Add a description for your article."})
     body = models.TextField(null=False, blank=False,
                             error_messages={"required": "Add a body for your article."})
-    created_on = models.DateTimeField(auto_now=False, auto_created=True, default=timezone.now())
-    updated_on = models.DateTimeField(auto_now=False, auto_created=True, default=timezone.now())
+    # auto_now_add sets the timezone.now when an instance is created
+    created_on = models.DateTimeField(auto_now_add=True)
+    # auto_now updates the field every time the save method is called
+    updated_on = models.DateTimeField(auto_now=True)
     image_url = models.CharField(max_length=255, null=True)
     slug = models.SlugField(max_length=255, unique=True)
 
@@ -40,8 +41,6 @@ class Article(models.Model):
         :param kwargs:
         """
         self.slug = generate_slug(Article, self)
-        # self.created_on = timezone.now()
-        # self.updated_on = timezone.now()
 
         super(Article, self).save(*args, **kwargs)
 
