@@ -115,7 +115,7 @@ class AccountTests(APITestCase):
                       'user with this email already exists.')
 
     def test_duplicate_username(self):
-        "user with same username provided exists"""
+        """user with same username provided exists"""
         self.register_user(new_user)
         response = self.register_user(dup_username)
         self.assertIn(response.data["errors"]["username"][0],
