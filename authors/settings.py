@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'drf_yasg',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -147,4 +148,17 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+    'DOC_EXPANSION': 'none',
+    'DEFAULT_MODEL_RENDERING': 'example'
+}
+
 django_heroku.settings(locals())
