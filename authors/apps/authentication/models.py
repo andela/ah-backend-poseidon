@@ -12,8 +12,7 @@ class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
-    Django to create a `User` for free. 
-
+    Django to create a `User` for free.
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
     """
@@ -32,17 +31,17 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, username, email, password):
+    def create_superuser(self, username, password):
         """
       Create and return a `User` with superuser powers.
-
       Superuser powers means that this use is an admin that can do anything
       they want.
       """
         if password is None:
             raise TypeError('Superusers must have a password.')
 
-        user = self.create_user(username, email, password)
+        user = self.model(username=username)
+        user.set_password(password)
         user.is_superuser = True
         user.is_staff = True
         user.save()
@@ -60,7 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # themselves when logging in. Since we need an email address for contacting
     # the user anyways, we will also use the email for logging in because it is
     # the most common form of login credential at the time of writing.
-    email = models.EmailField(db_index=True, unique=True)
+    email = models.EmailField(db_index=True, null=True)
 
     # When a user no longer wishes to use our platform, they may try to delete
     # there account. That's a problem for us because the data we collect is
@@ -85,8 +84,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     # In this case, we want that to be the email field.
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
 
     # Tells Django that the UserManager class defined above should manage
     # objects of this type.
@@ -95,23 +93,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """
         Returns a string representation of this `User`.
-
         This string is used when a `User` is printed in the console.
         """
-        return self.email
+        return self.username
 
     @property
     def token(self):
         """
         This method generates a JWT token that is going to store a user id,
-        user email, and sets an expirtation time to 5 days from the date of generation.
-        The methode also returns the generated token
+        user email, and sets an expirtation time to 5 days from the date of
+        generation.The method also returns the generated token
         """
         exp_date = datetime.now() + timedelta(days=5)
 
         token = jwt.encode({
             'id': self.pk,
+            'username': self.username,
             'email': self.email,
+            'username': self.username,
             'exp': int(exp_date.strftime('%s'))
         },
                            settings.SECRET_KEY,

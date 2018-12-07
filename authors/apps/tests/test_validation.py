@@ -43,10 +43,9 @@ class AccountTests(BaseTestCase):
     def test_create_super_user(self):
         """checks for registration of a super user in the User model"""
         user = User.objects.create_superuser(
-            email='m16ayebare@gmail.com',
             username='ayebare',
             password='sampletestcase')
-        self.assertIn(str(user), str(user.email))
+        self.assertIn(str(user), str(user.username))
 
     def test_create_non_user(self):
         """check for registration of a client user in the User model"""
@@ -86,15 +85,8 @@ class AccountTests(BaseTestCase):
         self.assertIn(response.data["errors"]["password"][0],
                       'Password should not be less than 8 characters.')
 
-    def test_duplicate_email(self):
-        """test user with same email provided exists"""
-        self.register_user(new_user)
-        response = self.register_user(data2)
-        self.assertIn(response.data["errors"]["email"][0],
-                      'user with this email already exists.')
-
     def test_duplicate_username(self):
-        """user with same username provided exists"""
+        "user with same username provided exists"""
         self.register_user(new_user)
         response = self.register_user(dup_username)
         self.assertIn(response.data["errors"]["username"][0],
