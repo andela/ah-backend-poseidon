@@ -31,6 +31,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('authors.apps.article.urls')),
     path('api/', include('authors.apps.profiles.urls')),
     path('api/', include('authors.apps.authentication.urls')),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
