@@ -6,15 +6,14 @@ from rest_framework.generics import GenericAPIView
 from .models import User
 
 from .renderers import UserJSONRenderer
-from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer,
-    ResetPasswordSerializer
-)
+from .serializers import (LoginSerializer, RegistrationSerializer,
+                          UserSerializer, ResetPasswordSerializer)
+
 
 class RegistrationAPIView(GenericAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (AllowAny, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = RegistrationSerializer
 
     def post(self, request):
@@ -31,8 +30,8 @@ class RegistrationAPIView(GenericAPIView):
 
 
 class LoginAPIView(GenericAPIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (AllowAny, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = LoginSerializer
 
     def post(self, request):
@@ -49,8 +48,8 @@ class LoginAPIView(GenericAPIView):
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -62,10 +61,19 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
+        user_data = request.data.get('user', {})
+
+        serializer_data = {
+            'username': user_data.get('username', request.user.username),
+            'email': user_data.get('email', request.user.email),
+            'profile': {
+                'bio': user_data.get('bio', request.user.profile.bio),
+                'image': user_data.get('image', request.user.profile.image)
+            }
+        }
+
         serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
-        )
+            request.user, data=serializer_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -73,9 +81,10 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 
 class ResetPasswordView(RetrieveUpdateAPIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (AllowAny, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = ResetPasswordSerializer
+
     def post(self, request):
         """
         This post method handle functionality of 
@@ -83,13 +92,11 @@ class ResetPasswordView(RetrieveUpdateAPIView):
         It queries user form databse and show user customised message
         upon succesfull email sending
         """
-        
+
         user = request.data.get('user', {})
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-        data = {
-            "Message": "A link has been sent to your email"
-        }
+        data = {"Message": "A link has been sent to your email"}
         return Response(data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, token, *args, **kwargs):
@@ -102,9 +109,10 @@ class ResetPasswordView(RetrieveUpdateAPIView):
 
 
 class ChangePasswordView(UpdateAPIView):
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (UserJSONRenderer, )
     serializer_class = UserSerializer
+
     def update(self, request, *args, **kwargs):
         serializer_data = request.data.get('user', {})
         """
@@ -113,9 +121,8 @@ class ChangePasswordView(UpdateAPIView):
         It gets user data and passes that throught the token of the user
         """
         serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
-        )
+            request.user, data=serializer_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         msg = {'Message': 'Your password has been updated succesfully'}
-        return Response(msg, status=status.HTTP_200_OK) 
+        return Response(msg, status=status.HTTP_200_OK)
