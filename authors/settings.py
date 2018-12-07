@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
-
 import os
 import django_heroku
 
@@ -92,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'ahdb'),
         'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('PASSWORD', ''),
+        'PASSWORD': os.environ.get('PASSWORD', '1460'),
         'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
@@ -201,3 +200,10 @@ SOCIAL_AUTH_TWITTER_KEY = '9MH0NfrOLijrgjK6XYQ0J6xwF'
 SOCIAL_AUTH_TWITTER_SECRET = 'W7XFqvsC7LOvaVfPM1nWOCAGb2OEi5sl7TxritrSHsKZ7bCdCx'
 
 django_heroku.settings(locals())
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'teamposeidon12@gmail.com'
+EMAIL_HOST_PASSWORD = '@poseidon12'

@@ -15,6 +15,20 @@ class BaseTestCase(APITestCase):
         url = reverse('authentication')
         return self.client.post(url, user_data, format='json')
 
+    def verify_user(self, user_data):
+        response = self.register_user(user_data)
+        token = response.data['token']
+        verify_url = "/api/users/verify?token={}".format(token)
+        res = self.client.get(verify_url)
+        return res
+
+    def verify_user_invalid_link(self, user_data):
+        response = self.register_user(user_data)
+        token = response.data['token']
+        verify_url = "api/users/rewdhdfgj?token={}".format(token)
+        res = self.client.get(verify_url)
+        return res
+
     def login_user(self, user_data):
         """login existing user"""
         url = reverse('login')
@@ -22,6 +36,6 @@ class BaseTestCase(APITestCase):
 
     def user_access(self):
         """signup and login user"""
-        self.register_user(new_user)
+        self.verify_user(new_user)
         response = self.login_user(user_login)
         self.add_credentials(response.data['token'])

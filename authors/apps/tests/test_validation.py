@@ -17,8 +17,9 @@ class AccountTests(BaseTestCase):
     def test_user_login(self):
         """new user can be logged in\
         and token returned on successful login"""
-        self.register_user(new_user)
+        self.verify_user(new_user)
         response = self.login_user(user_login)
+        #raise Exception(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("token", response.data)
 

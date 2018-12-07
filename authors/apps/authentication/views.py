@@ -1,10 +1,16 @@
-from rest_framework import status
+
+import os
+import jwt
+from django.conf import settings
+from django.core.mail import send_mail
+from rest_framework import status, generics
 from rest_framework.generics import RetrieveUpdateAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 from .models import User
 
+from .models import User
 from .renderers import UserJSONRenderer
 from .serializers import (LoginSerializer, RegistrationSerializer,
                           UserSerializer, ResetPasswordSerializer)
@@ -18,15 +24,28 @@ class RegistrationAPIView(GenericAPIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        email = user['email']
+        usera = User.objects.filter(email=email)
+        usera.update(is_active=False)
+        url_param = os.environ.get('BASE_URL', 'http://127.0.0.1:8000/api')
+        email = user['email']
+        send_mail(
+            'Email-verification',
+            'Click here to verify your account {}/users/verify?token={}'.
+            format(url_param, serializer.data['token']),
+            'Info@poseidon.com',
+            [email],
+            fail_silently=False,
+        )
+        info = """You have succesfully registerd to AH, please check your email for a confirmation link"""
+        rv = {"Message": info, "token": serializer.data['token']}
+        return Response(rv, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(GenericAPIView):
@@ -43,7 +62,6 @@ class LoginAPIView(GenericAPIView):
         # handles everything we need.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -125,4 +143,19 @@ class ChangePasswordView(UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         msg = {'Message': 'Your password has been updated succesfully'}
-        return Response(msg, status=status.HTTP_200_OK)
+        return Response(msg, status=status.HTTP_200_OK) 
+        
+class VerifyAccount(generics.GenericAPIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, format=None):
+        token = request.query_params.get('token')
+        payload = jwt.decode(token, settings.SECRET_KEY)
+        email = payload['email']
+        user = User.objects.filter(email=email)
+        user.update(is_active=True)
+        return Response(
+            {
+                'message': 'Account succefully verified, you can now login'
+            },
+            status=status.HTTP_200_OK)
