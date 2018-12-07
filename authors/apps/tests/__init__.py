@@ -48,7 +48,7 @@ short_password = {
 
 user_login = {
     "user": {
-        "email": "jak@jake.jake",
+        "username": "Jac",
         "password": "jakejake"
     }
 }

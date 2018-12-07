@@ -45,7 +45,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed(msg)
 
         try:
-            user = User.objects.get(email=payload['email'])
+            user = User.objects.get(username=payload['username'])
         except User.DoesNotExist:
             msg = 'No user with the provided credentials'
             raise exceptions.AuthenticationFailed(msg)

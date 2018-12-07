@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.urls import path
+from django.urls import path, include
 
 from .views import (LoginAPIView, RegistrationAPIView,
                     UserRetrieveUpdateAPIView, ResetPasswordView,
@@ -19,4 +19,5 @@ urlpatterns = [
         'password/reset/done/',
         ChangePasswordView.as_view(),
         name='password-reset'),
+    url(r'^auth/', include('rest_framework_social_oauth2.urls')),
 ]

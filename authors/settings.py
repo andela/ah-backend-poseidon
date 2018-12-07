@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'authors.apps.core',
     'authors.apps.profiles',
     'rest_framework_swagger',
+    'rest_framework_social_oauth2',
+    'oauth2_provider',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +75,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -146,6 +151,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
 }
 
@@ -160,5 +167,37 @@ SWAGGER_SETTINGS = {
     'DOC_EXPANSION': 'none',
     'DEFAULT_MODEL_RENDERING': 'example'
 }
+
+AUTHENTICATION_BACKENDS = (
+   'rest_framework_social_oauth2.backends.DjangoOAuth2',
+   'django.contrib.auth.backends.ModelBackend',
+
+    # Facebook OAuth2
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+
+    # twitter OAuth
+    'social_core.backends.twitter.TwitterOAuth',
+
+    # google oauth
+    'social_core.backends.google.GoogleOAuth2',
+)
+
+# Facebook configuration
+SOCIAL_AUTH_FACEBOOK_KEY = '708091699572484'
+SOCIAL_AUTH_FACEBOOK_SECRET = '321bf96c5a31ce3b4a1a49f708c65981'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+  'locale': 'ru_RU',
+  'fields': 'id, name, email, age_range'
+}
+
+# google configuration
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY ='112800644277-pgj3k7s5lk4u05k9c7qilputa07pts7v.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'NzXaJJviKtqCwh2VVw8H0531'
+
+# twitter configuration
+SOCIAL_AUTH_TWITTER_KEY = '9MH0NfrOLijrgjK6XYQ0J6xwF'
+SOCIAL_AUTH_TWITTER_SECRET = 'W7XFqvsC7LOvaVfPM1nWOCAGb2OEi5sl7TxritrSHsKZ7bCdCx'
 
 django_heroku.settings(locals())
