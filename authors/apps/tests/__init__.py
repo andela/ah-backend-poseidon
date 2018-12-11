@@ -54,24 +54,29 @@ short_password = {
     }
 }
 
-user_login = {
-    "user": {
-        "username": "Jac",
-        "password": "jakejake"
-    }
-}
+user_login = {"user": {"username": "Jac", "password": "jakejake"}}
 post_article = {
     "article": {
         "title": "Who is he",
         "description": "He has a bald head",
-        "body": "He has ruled Uganda for over 30 years"
+        "body": "He has ruled Uganda for over 30 years",
+        "tags": ["about", "politics"]
+    }
+}
+post_article_2 = {
+    "article": {
+        "title": "Pythonistas",
+        "description": "Python lovers' life",
+        "body": "I talk about who the life of pythonistas",
+        "tags": ["python", "technology", "programming"]
     }
 }
 update_article = {
     "article": {
         "title": "Who is he and why is he here",
         "description": "He has a bald head",
-        "body": "He has ruled Uganda for over 30 years"
+        "body": "He has ruled Uganda for over 30 years",
+        "tags": ["life"]
     }
 }
 article_missing_data = {
@@ -80,3 +85,5 @@ article_missing_data = {
         "body": "He has ruled Uganda for over 30 years"
     }
 }
+
+ARTICLE_URL = '/api/articles'

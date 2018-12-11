@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from authors.apps.tests import post_article
 from authors.apps.tests.base import BaseTestCase
+from . import ARTICLE_URL
 
 
 class TestRatingArticle(BaseTestCase):
@@ -14,7 +15,7 @@ class TestRatingArticle(BaseTestCase):
     def setUp(self):
         self.authorize_user()
         self.posting_article(post_article)
-        self.article_data = self.client.get(reverse("articles"), format='json')
+        self.article_data = self.client.get(ARTICLE_URL, format='json')
         data = self.article_data.json().get("articles")[0]
         self.slug = data["slug"]
 

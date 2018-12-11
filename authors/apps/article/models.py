@@ -3,9 +3,8 @@ module to define the structure of the article
 """
 
 from django.db import models
-
-# Create your models here.
 from django.db.models import Avg
+from taggit.managers import TaggableManager
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
@@ -16,36 +15,23 @@ class Article(models.Model):
     class to define the model of an article
     """
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="articles",
-        null=True
-    )
+        User, on_delete=models.CASCADE, related_name="articles", null=True)
 
     title = models.CharField(
         max_length=255,
         null=False,
         blank=False,
-        error_messages={
-            "required": "Add a title for your article."
-        }
-    )
+        error_messages={"required": "Add a title for your article."})
 
     description = models.TextField(
         null=False,
         blank=False,
-        error_messages={
-            "required": "Add a description for your article."
-        }
-    )
+        error_messages={"required": "Add a description for your article."})
 
     body = models.TextField(
         null=False,
         blank=False,
-        error_messages={
-            "required": "Add a body for your article."
-        }
-    )
+        error_messages={"required": "Add a body for your article."})
 
     user_rating = models.CharField(max_length=10, default='0')
 
@@ -55,6 +41,7 @@ class Article(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
     image_url = models.CharField(max_length=255, null=True)
     slug = models.SlugField(max_length=255, unique=True)
+    tags = TaggableManager(blank=True)
 
     def __str__(self):
         """

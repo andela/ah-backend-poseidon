@@ -4,6 +4,8 @@ Module to handle app serializers
 from datetime import datetime
 
 from rest_framework import serializers
+from taggit_serializer.serializers import (TaggitSerializer,
+                                           TagListSerializerField)
 
 from authors.apps.article.exceptions import NotFoundException
 from authors.apps.article.models import Article, Rating
@@ -12,36 +14,26 @@ from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import ProfileSerializer
 
 
-class ArticleSerializer(serializers.ModelSerializer):
+class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     """
     class to serialize the article models
     """
 
     author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        required=False
-    )
+        queryset=User.objects.all(), required=False)
     slug = serializers.CharField(read_only=True)
     user_rating = serializers.CharField(
-        source="author.average_rating",
-        required=False
-    )
-
-    def create(self, validated_data):
-        """
-        method to create an article
-        """
-        article = Article.objects.create(**validated_data)
-        return article
+        source="author.average_rating", required=False)
+    tags = TagListSerializerField()
 
     class Meta:
         """
         class behaviours
         """
         model = Article
-        fields = ('slug', 'title', 'description', 'body',
-                  'created_on', 'average_rating', 'user_rating',
-                  'updated_on', 'image_url', 'author')
+        fields = ('slug', 'title', 'description', 'body', 'created_on',
+                  'average_rating', 'user_rating', 'updated_on', 'image_url',
+                  'author', 'tags')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):
@@ -60,7 +52,8 @@ class ArticleSerializer(serializers.ModelSerializer):
                 raise Article.DoesNotExist
 
         except Article.DoesNotExist:
-            raise NotFoundException("You don't own update permissions for this Article, Sorry!")
+            raise NotFoundException(
+                "You don't own update permissions for this Article, Sorry!")
 
         required = {"title", "description", "body"}
         keys = set(data.keys())
@@ -70,10 +63,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         for val in missing:
             data.update({val: article.__getattribute__(val)})
 
-        data.update({
-            "author": user.pk,
-            "updated_at": datetime.now()
-        })
+        data.update({"author": user.pk, "updated_at": datetime.now()})
         return article, data
 
     def to_representation(self, instance):
@@ -81,8 +71,9 @@ class ArticleSerializer(serializers.ModelSerializer):
         method formats serializer display response
         """
         response = super().to_representation(instance)
-        profile = ProfileSerializer(Profile.objects.get(
-            user=instance.author), context=self.context).data
+        profile = ProfileSerializer(
+            Profile.objects.get(user=instance.author),
+            context=self.context).data
         response['author'] = profile
         return response
 
@@ -92,10 +83,12 @@ class RatingSerializer(serializers.ModelSerializer):
     class holding logic for article rating
     """
 
-    article = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all())
+    article = serializers.PrimaryKeyRelatedField(
+        queryset=Article.objects.all())
     rated_on = serializers.DateTimeField(read_only=True)
     rated_by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    score = serializers.DecimalField(required=True, max_digits=5, decimal_places=2)
+    score = serializers.DecimalField(
+        required=True, max_digits=5, decimal_places=2)
 
     @staticmethod
     def update_data(data, slug, user: User):
@@ -109,14 +102,16 @@ class RatingSerializer(serializers.ModelSerializer):
 
         if article.author == user:
             raise serializers.ValidationError({
-                "article": ["Please rate an article that does not belong to you"]
+                "article":
+                ["Please rate an article that does not belong to you"]
             })
 
         score = data.get("score", 0)
         if score > 5 or score < 0:
             raise serializers.ValidationError({
-                "score": ["Score value must not go "
-                          "below `0` and not go beyond `5`"]
+                "score":
+                ["Score value must not go "
+                 "below `0` and not go beyond `5`"]
             })
 
         data.update({"article": article.pk})

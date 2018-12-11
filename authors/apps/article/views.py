@@ -1,24 +1,25 @@
-from django.http import Http404
-from rest_framework import status, generics
-
-# Create your views here.
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status
+from rest_framework.generics import Http404, get_object_or_404
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from authors.apps.article.exceptions import NotFoundException
-from authors.apps.article.renderer import ArticleJSONRenderer
 from authors.apps.article.models import Article
-from authors.apps.article.serializers import ArticleSerializer, RatingSerializer
+from authors.apps.article.renderer import ArticleJSONRenderer
+from authors.apps.article.serializers import (ArticleSerializer,
+                                              RatingSerializer)
+
+from .filters import ArticleFilter
 
 
-class ArticleAPIView(generics.GenericAPIView):
+class ArticleAPIView(generics.CreateAPIView):
     """
     Article ViewSet
     Handles all CRUD operations
     """
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (ArticleJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
     serializer_class = ArticleSerializer
 
     def post(self, request):
@@ -27,20 +28,11 @@ class ArticleAPIView(generics.GenericAPIView):
         """
         article = request.data.get("article", {})
         article.update({"author": request.user.pk})  # request.user.pk
-        serializer = self.serializer_class(data=article,)
+        serializer = self.serializer_class(data=article, )
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def get(self, request):
-        """
-        returns a list of all articles
-        """
-        queryset = Article.objects.all()
-        serializer = ArticleSerializer(queryset, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -95,7 +87,9 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
             article.delete()
         except Article.DoesNotExist:
             raise NotFoundException("Article is not found.")
-        return Response({"detail": "Article deleted."},
+        return Response({
+            "detail": "Article deleted."
+        },
                         status=status.HTTP_204_NO_CONTENT)
 
 
@@ -104,8 +98,8 @@ class RatingsView(generics.GenericAPIView):
     implements methods to handle rating articles
     """
     serializer_class = RatingSerializer
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (ArticleJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
 
     def post(self, request, slug=None):
         """
@@ -117,5 +111,29 @@ class RatingsView(generics.GenericAPIView):
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ArticleListView(generics.ListAPIView):
+    """
+    Filter articles
+    """
+    permission_classes = (AllowAny, )
+    renderer_classes = (ArticleJSONRenderer, )
+    serializer_class = ArticleSerializer
+    filter_backends = (DjangoFilterBackend, )
+    filter_class = ArticleFilter
+
+    def list(self, request):
+        """
+        returns a list of all articles, allows filtering and custom searching
+        """
+        queryset = Article.objects.all()
+        queryset = self.filter_queryset(queryset)
+        serializer = ArticleSerializer(queryset, many=True)
+        if serializer.data == []:
+            return Response({
+                "detail": "No articles found after search"
+            },
+                            status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.data, status=status.HTTP_200_OK)

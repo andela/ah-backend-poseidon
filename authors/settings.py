@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'rest_framework_social_oauth2',
     'oauth2_provider',
     'social_django',
+    'django_filters',
+    'taggit',
+    'taggit_serializer',
 ]
 
 MIDDLEWARE = [
