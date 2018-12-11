@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from . import (new_user, user_login, post_article)
+from . import (new_user, user_login, post_article, data2)
 
 
 class BaseTestCase(APITestCase):
@@ -61,3 +61,20 @@ class BaseTestCase(APITestCase):
     def authorize_user(self):
         res = self.register_user(new_user)
         self.add_credentials(res.data["token"])
+
+    def authorize_user2(self):
+        res = self.register_user(data2)
+        self.add_credentials(res.data["token"])
+
+    def rate_article(self, rating):
+
+        self.authorize_user2()
+        response = self.client.get(reverse("articles"), format='json')
+        data = response.json().get("articles")[0]
+        slug = data["slug"]
+
+        return self.client.post(
+            reverse("rating", kwargs=dict(slug=slug)),
+            data={"article": {"score": rating}},
+            format="json"
+        )
