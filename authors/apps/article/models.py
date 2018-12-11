@@ -1,18 +1,20 @@
 """
-class to define the structure of the article
+module to define the structure of the article
 """
 
 from django.db import models
 
 # Create your models here.
+from django.db.models import Avg
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
 
 
 class Article(models.Model):
-
-    # Model for an article
+    """
+    class to define the model of an article
+    """
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -45,6 +47,8 @@ class Article(models.Model):
         }
     )
 
+    user_rating = models.CharField(max_length=10, default='0')
+
     # auto_now_add sets the timezone.now when an instance is created
     created_on = models.DateTimeField(auto_now_add=True)
     # auto_now updates the field every time the save method is called
@@ -68,4 +72,34 @@ class Article(models.Model):
 
         super(Article, self).save(*args, **kwargs)
 
+    @property
+    def average_rating(self):
+        """
+        method to calculate the average rating of the article.
+        """
+        ratings = self.scores.all().aggregate(score=Avg("score"))
+        return float('%.2f' % (ratings["score"] if ratings['score'] else 0))
 
+    class Meta:
+        get_latest_by = 'created_on'
+        ordering = ['-created_on', 'author']
+
+
+class Rating(models.Model):
+    """
+    Model for rating an article
+    """
+    article = models.ForeignKey(
+        Article,
+        related_name="scores",
+        on_delete=models.CASCADE)
+    rated_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="scores",
+        null=True)
+    rated_on = models.DateTimeField(auto_now_add=True)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+
+    class Meta:
+        ordering = ["-score"]

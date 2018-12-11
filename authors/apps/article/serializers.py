@@ -1,9 +1,12 @@
+"""
+Module to handle app serializers
+"""
 from datetime import datetime
 
 from rest_framework import serializers
 
 from authors.apps.article.exceptions import NotFoundException
-from authors.apps.article.models import Article
+from authors.apps.article.models import Article, Rating
 from authors.apps.authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import ProfileSerializer
@@ -15,13 +18,18 @@ class ArticleSerializer(serializers.ModelSerializer):
     """
 
     author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False)
+        queryset=User.objects.all(),
+        required=False
+    )
     slug = serializers.CharField(read_only=True)
+    user_rating = serializers.CharField(
+        source="author.average_rating",
+        required=False
+    )
 
     def create(self, validated_data):
         """
-        :param validated_data:
-        :return:
+        method to create an article
         """
         article = Article.objects.create(**validated_data)
         return article
@@ -31,7 +39,9 @@ class ArticleSerializer(serializers.ModelSerializer):
         class behaviours
         """
         model = Article
-        fields = '__all__'
+        fields = ('slug', 'title', 'description', 'body',
+                  'created_on', 'average_rating', 'user_rating',
+                  'updated_on', 'image_url', 'author')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):
@@ -68,12 +78,83 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """
-        formats serializer display response
-        :param instance:
-        :return:
+        method formats serializer display response
         """
         response = super().to_representation(instance)
         profile = ProfileSerializer(Profile.objects.get(
             user=instance.author), context=self.context).data
         response['author'] = profile
         return response
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    """
+    class holding logic for article rating
+    """
+
+    article = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all())
+    rated_on = serializers.DateTimeField(read_only=True)
+    rated_by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    score = serializers.DecimalField(required=True, max_digits=5, decimal_places=2)
+
+    @staticmethod
+    def update_data(data, slug, user: User):
+        """
+        method to update the article with a rating
+        """
+        try:
+            article = Article.objects.get(slug__exact=slug)
+        except Article.DoesNotExist:
+            raise NotFoundException("Article is not found.")
+
+        if article.author == user:
+            raise serializers.ValidationError({
+                "article": ["Please rate an article that does not belong to you"]
+            })
+
+        score = data.get("score", 0)
+        if score > 5 or score < 0:
+            raise serializers.ValidationError({
+                "score": ["Score value must not go "
+                          "below `0` and not go beyond `5`"]
+            })
+
+        data.update({"article": article.pk})
+        data.update({"rated_by": user.pk})
+        return data
+
+    def create(self, validated_data):
+        """
+        method to create and save a rating for
+        """
+        rated_by = validated_data.get("rated_by", None)
+        article = validated_data.get("article", None)
+        score = validated_data.get("score", 0)
+
+        try:
+            rating = Rating.objects.get(
+                rated_by=rated_by, article__slug=article.slug)
+        except Rating.DoesNotExist:
+            return Rating.objects.create(**validated_data)
+
+        rating.score = score
+        rating.save()
+        return rating
+
+    def to_representation(self, instance):
+        """
+        method to format the display of serializers
+        """
+        response = super().to_representation(instance)
+
+        response['article'] = instance.article.slug
+        response['rated_by'] = instance.rated_by.username
+        response['average_rating'] = instance.article.average_rating
+        return response
+
+    class Meta:
+        """
+        class behaviours
+        """
+        model = Rating
+        fields = ("score", "rated_by", "rated_on", "article")

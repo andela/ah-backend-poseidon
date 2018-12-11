@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import status, generics
 
 # Create your views here.
@@ -8,7 +9,7 @@ from rest_framework.response import Response
 from authors.apps.article.exceptions import NotFoundException
 from authors.apps.article.renderer import ArticleJSONRenderer
 from authors.apps.article.models import Article
-from authors.apps.article.serializers import ArticleSerializer
+from authors.apps.article.serializers import ArticleSerializer, RatingSerializer
 
 
 class ArticleAPIView(generics.GenericAPIView):
@@ -23,8 +24,6 @@ class ArticleAPIView(generics.GenericAPIView):
     def post(self, request):
         """
         creates an article
-        :param request:
-        :return:
         """
         article = request.data.get("article", {})
         article.update({"author": request.user.pk})  # request.user.pk
@@ -37,8 +36,6 @@ class ArticleAPIView(generics.GenericAPIView):
     def get(self, request):
         """
         returns a list of all articles
-        :param request:
-        :return:
         """
         queryset = Article.objects.all()
         serializer = ArticleSerializer(queryset, many=True)
@@ -47,17 +44,14 @@ class ArticleAPIView(generics.GenericAPIView):
 
 
 class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (ArticleJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
     serializer_class = ArticleSerializer
     lookup_field = "slug"
 
     def retrieve(self, request, slug=None):
         """
         returns a specific article based on the slug
-        :param slug:
-        :param request:
-        :return:
         """
         queryset = Article.objects.all()
         article = get_object_or_404(queryset, slug=slug)
@@ -69,14 +63,12 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, slug=None):
         """
         update a specific article
-        :param request:
-        :param slug:
-        :return:
         """
         article_update = request.data.get("article", {})
 
-        article, article_update = self.serializer_class.validate_for_update(
-            article_update, request.user, slug)
+        article, article_update = \
+            self.serializer_class.validate_for_update(
+                article_update, request.user, slug)
 
         serializer = self.serializer_class(
             data=article_update, context={'request': request})
@@ -90,9 +82,6 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, slug=None):
         """
         delete an article
-        :param request:
-        :param slug:
-        :return:
         """
 
         try:
@@ -106,4 +95,27 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
             article.delete()
         except Article.DoesNotExist:
             raise NotFoundException("Article is not found.")
-        return Response({"detail": "Article deleted."}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Article deleted."},
+                        status=status.HTTP_204_NO_CONTENT)
+
+
+class RatingsView(generics.GenericAPIView):
+    """
+    implements methods to handle rating articles
+    """
+    serializer_class = RatingSerializer
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (ArticleJSONRenderer,)
+
+    def post(self, request, slug=None):
+        """
+        method to post a rating for an article
+        """
+        data = self.serializer_class.update_data(
+            request.data.get("article", {}), slug, request.user)
+
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
