@@ -11,12 +11,17 @@ class ProfileJSONRenderer(JSONRenderer):
         # or something similar), `data` will contain an `errors` key. We want
         # the default JSONRenderer to handle rendering errors, so we need to
         # check for this case.
+        response = json.dumps({'profile': data})
+
+        if isinstance(data, list):
+            return json.dumps({'profiles': data})
+
         errors = data.get('errors', None)
 
         if errors is not None:
             # As mentioned about, we will let the default JSONRenderer handle
             # rendering errors.
-            return super(ProfileJSONRenderer, self).render(data)
+            response = super(ProfileJSONRenderer, self).render(data)
 
-        # Finally, we can render our data under the "user" namespace.
-        return json.dumps({'profile': data})
+        # Finally, we can render our data under the "profile" namespace.
+        return response
