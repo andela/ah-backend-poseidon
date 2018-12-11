@@ -1,12 +1,12 @@
-from rest_framework import status, serializers
-from rest_framework import generics
-from rest_framework import permissions
+from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 
-from .exceptions import ProfileDoesNotExist, NotFollowSelf
-from .models import Profile
-from .serializers import ProfileSerializer
-from .renderers import ProfileJSONRenderer
+from .exceptions import (NotFollowSelf, ProfileDoesNotExist,
+                         NotificationDoesNotExist)
+from .models import Notification, Profile
+from .utilities import return_notification
+from .renderers import NotificationJSONRenderer, ProfileJSONRenderer
+from .serializers import NotificationSerializer, ProfileSerializer
 
 
 class ProfileRetrieveAPIView(generics.RetrieveAPIView):
@@ -80,3 +80,43 @@ class ListAuthorsAPIView(generics.ListAPIView):
     serializer_class = ProfileSerializer
     renderer_classes = (ProfileJSONRenderer, )
     permission_classes = (permissions.IsAuthenticated, )
+
+
+class UserNotificationsView(generics.GenericAPIView):
+    """
+      Return user's notification
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = NotificationSerializer
+    renderer_classes = (NotificationJSONRenderer, )
+
+    def get(self, request):
+        query = Notification.objects.filter(user_id=request.user.pk)
+        serializer = NotificationSerializer(query, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class NotificationRetrieveAPIView(generics.GenericAPIView):
+    """
+      Return user's notification
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = NotificationSerializer
+    renderer_classes = (NotificationJSONRenderer, )
+
+    def get(self, request, pk):
+        query = return_notification(request, pk)
+        serializer = NotificationSerializer(query)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        query = return_notification(request, pk)
+        query.status = True
+        query.save()
+        serializer = NotificationSerializer(query)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        query = return_notification(request, pk)
+        query.delete()
+        return Response({'detail': 'Notification has been deleted'})

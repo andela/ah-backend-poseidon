@@ -25,3 +25,24 @@ class ProfileJSONRenderer(JSONRenderer):
 
         # Finally, we can render our data under the "profile" namespace.
         return response
+
+
+class NotificationJSONRenderer(JSONRenderer):
+    """
+    Override default renderer to customise output
+    """
+    charset = 'utf-8'
+
+    def render(self,
+               data,
+               accepted_media_type='application/json',
+               renderer_context=None):
+        if isinstance(data, list):
+            errors = None
+        else:
+            errors = data.get('errors', None)
+
+        if errors is not None:
+            return super(NotificationJSONRenderer, self).render(data)
+
+        return json.dumps({'notifications': data})

@@ -1,7 +1,9 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from . import (new_user, user_login, post_article, post_article_2, data2,
-               ARTICLE_URL)
+               ARTICLE_URL, user2_login, new_user_2)
+from authors.apps.authentication.models import User
+from authors.apps.profiles.models import Notification
 
 
 class BaseTestCase(APITestCase):
@@ -40,6 +42,12 @@ class BaseTestCase(APITestCase):
         """signup and login user"""
         self.verify_user(new_user)
         response = self.login_user(user_login)
+        self.add_credentials(response.data['token'])
+
+    def user2_access(self):
+        """signup and login user2"""
+        self.verify_user(new_user_2)
+        response = self.login_user(user2_login)
         self.add_credentials(response.data['token'])
 
     def posting_article(self, post_data):
@@ -125,3 +133,11 @@ class BaseTestCase(APITestCase):
             reverse("undo_favourite", kwargs=dict(slug=slug)),
             format="json"
         )
+
+    def create_notification(self, username):
+        user = User.objects.get(username=username)
+        title = 'create article'
+        body = 'article has been created'
+        notify = Notification(user=user, type=title, body=body)
+        notify.save()
+        return notify.id

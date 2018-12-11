@@ -54,7 +54,20 @@ short_password = {
     }
 }
 
-user_login = {"user": {"username": "Jac", "password": "jakejake"}}
+user_login = {
+    "user": {
+        "username": "Jac",
+        "password": "jakejake"
+    }
+}
+
+user2_login = {
+    "user": {
+        "username": "John",
+        "password": "johnadmin"
+    }
+}
+
 post_article = {
     "article": {
         "title": "Who is he",
@@ -97,3 +110,4 @@ thread = {"comment": {
 
 
 ARTICLE_URL = '/api/articles'
+new_username = new_user['user']['username']
