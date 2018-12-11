@@ -6,6 +6,14 @@ new_user = {
     }
 }
 
+new_user_2 = {
+    "user": {
+        "username": "John",
+        "email": "john@dev.com",
+        "password": "johnadmin"
+    }
+}
+
 dup_username = {
     "user": {
         "username": "Jac",
