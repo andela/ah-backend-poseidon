@@ -47,10 +47,13 @@ class BaseTestCase(APITestCase):
         return self.client.post(url, data=post_data, format='json')
 
     def slugger(self):
-        """
-        authorize user access and post an article
-        :returns slug
-        """
+        self.authorize_user_reg()
+        self.posting_article(post_article)
+        response = self.client.get('/api/articles', format='json')
+        data = response.json().get("articles")[0]
+        return data["slug"]
+
+    def slugger2(self):
         self.authorize_user()
         self.posting_article(post_article)
         response = self.client.get('/api/articles', format='json')
@@ -70,6 +73,10 @@ class BaseTestCase(APITestCase):
         register new user and escape email verification process
         """
         res = self.register_user(new_user)
+        self.add_credentials(res.data["token"])
+
+    def authorize_user_reg(self):
+        res = self.login_user(new_user)
         self.add_credentials(res.data["token"])
 
     def authorize_user2(self):

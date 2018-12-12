@@ -47,7 +47,7 @@ class TestArticle(BaseTestCase):
         self.assertEqual(len(response.json().get("articles")), 3)
 
     def test_get_specific_article(self):
-        slug = self.slugger()
+        slug = self.slugger2()
         response = self.client.get(
             reverse("get_update_destroy_article", kwargs=dict(slug=slug)),
             format='json')

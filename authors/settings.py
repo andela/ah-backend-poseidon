@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'authors.apps.article',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.comments',
     'rest_framework_swagger',
     'rest_framework_social_oauth2',
     'oauth2_provider',
