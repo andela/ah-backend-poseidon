@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from . import (new_user, user_login, post_article, data2)
+from . import (new_user, user_login, post_article, post_article_2, data2,
+               ARTICLE_URL)
 
 
 class BaseTestCase(APITestCase):
@@ -47,16 +48,14 @@ class BaseTestCase(APITestCase):
     def slugger(self):
         self.authorize_user()
         self.posting_article(post_article)
-        response = self.client.get(reverse("articles"), format='json')
+        response = self.client.get('/api/articles', format='json')
         data = response.json().get("articles")[0]
         return data["slug"]
 
     def deleter(self, slug):
         return self.client.delete(
-            reverse(
-                "get_update_destroy_article",
-                kwargs=dict(slug=slug)), format='json'
-        )
+            reverse("get_update_destroy_article", kwargs=dict(slug=slug)),
+            format='json')
 
     def authorize_user(self):
         res = self.register_user(new_user)
@@ -67,14 +66,19 @@ class BaseTestCase(APITestCase):
         self.add_credentials(res.data["token"])
 
     def rate_article(self, rating):
-
         self.authorize_user2()
-        response = self.client.get(reverse("articles"), format='json')
+        response = self.client.get(ARTICLE_URL, format='json')
         data = response.json().get("articles")[0]
         slug = data["slug"]
 
         return self.client.post(
             reverse("rating", kwargs=dict(slug=slug)),
-            data={"article": {"score": rating}},
-            format="json"
-        )
+            data={"article": {
+                "score": rating
+            }},
+            format="json")
+
+    def post_articles_for_search(self):
+        self.authorize_user()
+        self.posting_article(post_article)
+        self.posting_article(post_article_2)

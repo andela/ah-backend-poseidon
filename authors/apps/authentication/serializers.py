@@ -175,9 +175,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(allow_blank=False)
-    
+
     def validate(self, data):
-        """ 
+        """
         For user to reset thier password the email
         has to be validate with what is in the database
         """
@@ -207,4 +207,4 @@ class ResetPasswordSerializer(serializers.Serializer):
                   recipient], fail_silently=False)
         return {
             'email': user,
-        } 
+        }
