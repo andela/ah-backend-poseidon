@@ -17,6 +17,9 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
+    favourites = models.ManyToManyField(
+        'article.Article',
+        related_name='favourite_by')
 
     def __str__(self):
         return self.user.username
@@ -40,6 +43,18 @@ class Profile(models.Model):
     # Returns one's followers.
     def followers(self):
         return self.followed_by.all()
+
+    # Favourite an article
+    def favourite(self, article):
+        self.favourites.add(article)
+
+    # method to not favourite article
+    def not_favourite(self, article):
+        self.favourites.remove(article)
+
+    # check if user has an article selected as favourite
+    def is_favourite(self, article):
+        return self.favourites.filter(pk=article.pk).exists()
 
 
 # This signals the `Profile` model when a user has been registered

@@ -25,15 +25,16 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     user_rating = serializers.CharField(
         source="author.average_rating", required=False)
     tags = TagListSerializerField()
+    favourites_count = serializers.SerializerMethodField()
 
     class Meta:
         """
         class behaviours
         """
         model = Article
-        fields = ('slug', 'title', 'description', 'body', 'created_on',
-                  'average_rating', 'user_rating', 'updated_on', 'image_url',
-                  'author', 'tags')
+        fields = ('slug', 'title', 'description', 'body',
+                  'created_on', 'average_rating', 'user_rating',
+                  'updated_on', 'image_url', 'author', 'favourites_count', 'tags')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):
@@ -76,6 +77,9 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
             context=self.context).data
         response['author'] = profile
         return response
+
+    def get_favourites_count(self, instance):
+        return instance.favourite_by.count()
 
 
 class RatingSerializer(serializers.ModelSerializer):

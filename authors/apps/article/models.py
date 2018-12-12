@@ -42,6 +42,7 @@ class Article(models.Model):
     image_url = models.CharField(max_length=255, null=True)
     slug = models.SlugField(max_length=255, unique=True)
     tags = TaggableManager(blank=True)
+    favourites_count = models.IntegerField(default=0)
 
     def __str__(self):
         """
@@ -65,7 +66,11 @@ class Article(models.Model):
         method to calculate the average rating of the article.
         """
         ratings = self.scores.all().aggregate(score=Avg("score"))
-        return float('%.2f' % (ratings["score"] if ratings['score'] else 0))
+        return float('%.2f' % (ratings["score"]
+                               if ratings['score'] else 0))
+
+    def is_favourite_by(self):
+        return self.favourite_by.all()
 
     class Meta:
         get_latest_by = 'created_on'
