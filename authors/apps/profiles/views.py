@@ -70,3 +70,13 @@ class FollowAuthorAPIView(generics.GenericAPIView):
             followee, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ListAuthorsAPIView(generics.ListAPIView):
+    """
+    Implements listing of all users' profiles
+    """
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    renderer_classes = (ProfileJSONRenderer, )
+    permission_classes = (permissions.IsAuthenticated, )
