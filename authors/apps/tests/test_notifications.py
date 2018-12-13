@@ -70,7 +70,7 @@ class NotificationTests(BaseTestCase):
     def test_notification_after_article(self):
         res = self.register_user(data2)
         token = res.data['token']
-        self.client.post(
+        self.client.put(
             reverse('user_follow', kwargs={'username': 'Jacko'}))
         verify_url = "/api/users/verify?token={}".format(token)
         self.client.get(verify_url)

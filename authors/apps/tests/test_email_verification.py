@@ -38,7 +38,7 @@ class TestEmailVerification(AccountTests):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_failed_verification(self):
-        """ Test verification fails when user registration does not go through. """
+        """ Test verification fails when user registration does not go through."""
         response = self.register_user(invalid_email)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(len(mail.outbox), 0)
