@@ -26,7 +26,7 @@ schema_view = get_schema_view(
         description="A social blogging platform.",
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(permissions.AllowAny, ),
 )
 
 urlpatterns = [
@@ -34,7 +34,9 @@ urlpatterns = [
     path('api/', include('authors.apps.article.urls')),
     path('api/', include('authors.apps.profiles.urls')),
     path('api/', include('authors.apps.authentication.urls')),
-    path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
-         name='schema-swagger-ui'),
+    path('api/', include('authors.apps.comments.urls')),
+    path(
+        'docs/',
+        schema_view.with_ui('swagger', cache_timeout=0),
+        name='schema-swagger-ui'),
 ]
-

@@ -86,4 +86,14 @@ article_missing_data = {
     }
 }
 
+
+comment = {"comment": {
+    "body": "This is a comment",
+}}
+
+thread = {"comment": {
+    "body": "This is a comment"
+}}
+
+
 ARTICLE_URL = '/api/articles'
