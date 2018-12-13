@@ -143,8 +143,9 @@ class ChangePasswordView(UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         msg = {'Message': 'Your password has been updated succesfully'}
-        return Response(msg, status=status.HTTP_200_OK) 
-        
+        return Response(msg, status=status.HTTP_200_OK)
+
+
 class VerifyAccount(generics.GenericAPIView):
     permission_classes = (AllowAny, )
 

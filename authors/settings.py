@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django_filters',
     'taggit',
     'taggit_serializer',
+    'simple_history',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'authors.urls'
@@ -96,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'ahdb'),
         'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('PASSWORD', ''),
+        'PASSWORD': os.environ.get('PASSWORD', 'moschinogab19'),
         'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
@@ -155,7 +157,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        # django-oauth-toolkit >= 1.0.0
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
 }
@@ -173,8 +176,8 @@ SWAGGER_SETTINGS = {
 }
 
 AUTHENTICATION_BACKENDS = (
-   'rest_framework_social_oauth2.backends.DjangoOAuth2',
-   'django.contrib.auth.backends.ModelBackend',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 
     # Facebook OAuth2
     'social_core.backends.facebook.FacebookAppOAuth2',
@@ -192,12 +195,12 @@ SOCIAL_AUTH_FACEBOOK_KEY = '708091699572484'
 SOCIAL_AUTH_FACEBOOK_SECRET = '321bf96c5a31ce3b4a1a49f708c65981'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-  'locale': 'ru_RU',
-  'fields': 'id, name, email, age_range'
+    'locale': 'ru_RU',
+    'fields': 'id, name, email, age_range'
 }
 
 # google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY ='112800644277-pgj3k7s5lk4u05k9c7qilputa07pts7v.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '112800644277-pgj3k7s5lk4u05k9c7qilputa07pts7v.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'NzXaJJviKtqCwh2VVw8H0531'
 
 # twitter configuration

@@ -202,7 +202,8 @@ class ResetPasswordSerializer(serializers.Serializer):
         subject = "Authors Heven. Reset your password"
         token = user.token
         url = "http://127.0.0.1:8000/api/password-reset/"
-        body = " Click on this link to reset your password {}{}/".format(url, token)
+        body = " Click on this link to reset your password {}{}/".format(
+            url, token)
         send_mail(subject, body, 'from', [
                   recipient], fail_silently=False)
         return {

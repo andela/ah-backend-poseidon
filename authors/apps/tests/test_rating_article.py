@@ -12,6 +12,7 @@ class TestRatingArticle(BaseTestCase):
     """
     test class to contain functions to test rating an article
     """
+
     def setUp(self):
         self.authorize_user()
         self.posting_article(post_article)

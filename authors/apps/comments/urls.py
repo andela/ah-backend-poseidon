@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (CommentCreateListView, CommentsListThreadsCreateView,
-                    CommentsAPIView)
+                    CommentsAPIView, CommentHistoryListView)
 
 app_name = 'comments'
 urlpatterns = [
@@ -13,4 +13,7 @@ urlpatterns = [
         '<slug>/comments/<int:id>/thread',
         CommentsListThreadsCreateView.as_view(),
         name='thread_comment'),
+    path('<slug>/comments/<int:id>/history',
+         CommentHistoryListView.as_view(),
+         name='comment_history'),
 ]

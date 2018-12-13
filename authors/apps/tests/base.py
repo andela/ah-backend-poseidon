@@ -141,3 +141,8 @@ class BaseTestCase(APITestCase):
         notify = Notification(user=user, type=title, body=body)
         notify.save()
         return notify.id
+        
+    def regiter_user_and_post_article(self):
+        self.user_access()
+        self.posting_article(post_article)
+        return True
