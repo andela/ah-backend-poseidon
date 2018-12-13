@@ -1,3 +1,10 @@
+from django.http import Http404
+from rest_framework import status, generics
+
+# Create your views here.
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.generics import Http404, get_object_or_404
@@ -136,4 +143,59 @@ class ArticleListView(generics.ListAPIView):
                 "detail": "No articles found after search"
             },
                             status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FavouritesAPIView(generics.GenericAPIView):
+    """
+    Handles methods involved with selecting aan article as a favourite
+    """
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ArticleSerializer
+
+    def post(self,request, slug=None):
+        profile = self.request.user.profile
+        serializer_context = {"request": request}
+        try:
+            article = Article.objects.get(slug=slug)
+            if article.author == request.user:
+                return Response({
+                    "message": "Please favourite another author's article",
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Article.DoesNotExist:
+            raise NotFound("Article not found")
+        if profile.is_favourite(article):
+            return Response({
+                "message": "Article is already your favourite"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # add the article to the user profile as favourite
+        profile.favourite(article)
+        # to increment the favourites count field in articles
+        article.favourites_count += 1
+        article.save()
+        serializer = self.serializer_class(article, context=serializer_context)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, slug=None):
+        profile = self.request.user.profile
+        serializer_context = {"request": request}
+
+        try:
+            article = Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            raise NotFound("Article not found")
+
+        if not profile.is_favourite(article=article):
+            return Response({
+                "message": "Article is not your favourites list"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        profile.not_favourite(article=article)
+        article.favourites_count = article.favourites_count-1 \
+            if article.favourites_count > 0 else 0
+        article.save()
+
+        serializer = self.serializer_class(article, context=serializer_context)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
