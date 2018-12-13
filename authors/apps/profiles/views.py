@@ -9,6 +9,23 @@ from .renderers import NotificationJSONRenderer, ProfileJSONRenderer
 from .serializers import NotificationSerializer, ProfileSerializer
 
 
+def get_follows(**kwargs):
+    "Handles getting and serializing a user's followers or followings"
+    data = []
+    message = 'Currently you have no follows.'
+    for follower in kwargs['follows']:
+        serializer = kwargs['serializer'](
+            follower, context={
+                'request': kwargs['request']
+            })
+        data.append(serializer.data)
+
+    if len(data) is 0:
+        data.append(message)
+
+    return data
+
+
 class ProfileRetrieveAPIView(generics.RetrieveAPIView):
     """
       Implements user's profile endpoint.
@@ -120,3 +137,36 @@ class NotificationRetrieveAPIView(generics.GenericAPIView):
         query = return_notification(request, pk)
         query.delete()
         return Response({'detail': 'Notification has been deleted'})
+class FollowersAPIView(generics.ListAPIView):
+    """
+    Implements listing all user's followers
+    """
+    serializer_class = ProfileSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get(self, request):
+        user = request.user.profile
+        followers = user.followers()
+        data = get_follows(
+            follows=followers,
+            request=request,
+            serializer=self.serializer_class)
+
+        return Response({'followers': data})
+
+
+class FollowsAPIView(generics.ListAPIView):
+    """
+    Implements listing all users that the user is following
+    """
+    serializer_class = ProfileSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get(self, request):
+        user = request.user.profile
+        follows = user.follows.all()
+
+        data = get_follows(
+            follows=follows, request=request, serializer=self.serializer_class)
+
+        return Response({'following': data})

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (ProfileRetrieveAPIView, FollowAuthorAPIView,
                     NotificationRetrieveAPIView, UserNotificationsView,
-                    ListAuthorsAPIView)
+                    ListAuthorsAPIView, FollowersAPIView, FollowsAPIView)
 
 urlpatterns = [
     path(
@@ -19,4 +19,6 @@ urlpatterns = [
         'notifications/<int:pk>/',
         NotificationRetrieveAPIView.as_view(),
         name='single_notify'),
+    path('user/followers', FollowersAPIView.as_view(), name="user_followers"),
+    path('user/following', FollowsAPIView.as_view(), name="user_following"),
 ]

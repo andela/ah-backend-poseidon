@@ -84,7 +84,7 @@ class BaseTestCase(APITestCase):
         self.add_credentials(res.data["token"])
 
     def authorize_user_reg(self):
-        res = self.login_user(new_user)
+        res = self.login_user(user_login)
         self.add_credentials(res.data["token"])
 
     def authorize_user2(self):
@@ -141,3 +141,10 @@ class BaseTestCase(APITestCase):
         notify = Notification(user=user, type=title, body=body)
         notify.save()
         return notify.id
+
+    def followers_and_following(self):
+        res = self.register_user(new_user_2)
+        self.authorize_user()
+        self.client.post(reverse('user_follow', kwargs={'username': 'John'}))
+
+        return res

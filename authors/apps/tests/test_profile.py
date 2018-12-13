@@ -1,6 +1,5 @@
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
 from .test_validation import BaseTestCase
 from . import new_user, new_user_2
 
@@ -102,3 +101,22 @@ class UserFollowingTestCase(BaseTestCase):
         self.assertIn(
             'Profile does not exist. Check provided username.',
             response.data['errors']['detail'])
+
+    def test_getting_user_followers(self):
+        res = self.followers_and_following()
+        self.add_credentials(res.data['token'])
+        response = self.client.get(reverse('user_followers'))
+        self.assertIn('followers', response.data)
+
+    def test_getting_users_a_user_is_following_when_empty(self):
+        res = self.followers_and_following()
+        self.add_credentials(res.data['token'])
+        response = self.client.get(reverse('user_following'))
+        self.assertIn('Currently you have no follows.',
+                      response.data['following'])
+
+    def test_getting_users_a_user_is_following_when_not_empty(self):
+        self.followers_and_following()
+        response = self.client.get(reverse('user_following'))
+        self.assertIn('following', response.data)
+        

@@ -5,7 +5,7 @@ from django.conf.urls import url
 from django.urls import path
 
 from .views import (ArticleAPIView, ArticleListView, ArticleRetrieveAPIView,
-                    RatingsView, FavouritesAPIView)
+                    RatingsView, FavouritesAPIView, LikeDislikeAPIView)
 
 urlpatterns = [
     # article urls
@@ -24,4 +24,8 @@ urlpatterns = [
          FavouritesAPIView.as_view(), name="favourite"),
     path('<slug>/favourite/',
          FavouritesAPIView.as_view(), name="undo_favourite"),
+    path(
+        'articles/<slug>/likes',
+        LikeDislikeAPIView.as_view(),
+        name='like_article'),
 ]

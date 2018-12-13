@@ -18,6 +18,7 @@ from authors.apps.article.serializers import (ArticleSerializer,
                                               RatingSerializer)
 
 from .filters import ArticleFilter
+from .liking_disliking import Like, Dislike
 
 
 class ArticleAPIView(generics.CreateAPIView):
@@ -199,3 +200,30 @@ class FavouritesAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(article, context=serializer_context)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+        
+class LikeDislikeAPIView(generics.GenericAPIView):
+    """
+    Implements liking and disliking articles
+    """
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ArticleJSONRenderer, )
+    serializer_class = ArticleSerializer
+
+    def post(self, request, slug):
+
+        user = request.user
+        article = Article.objects.get(slug=slug)
+        Like().like(article, user)
+
+        serializer = self.serializer_class(article)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, slug):
+
+        user = request.user
+        article = Article.objects.get(slug=slug)
+        Dislike().dislike(article, user)
+
+        serializer = self.serializer_class(article)
+        return Response(serializer.data)

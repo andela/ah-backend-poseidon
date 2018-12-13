@@ -5,9 +5,11 @@ module to define the structure of the article
 from django.db import models
 from django.db.models import Avg
 from taggit.managers import TaggableManager
+from django.contrib.contenttypes.fields import GenericRelation
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
+from .liking_disliking import Like, Dislike
 
 
 class Article(models.Model):
@@ -43,6 +45,10 @@ class Article(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     tags = TaggableManager(blank=True)
     favourites_count = models.IntegerField(default=0)
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
+    liking = GenericRelation(Like)
+    disliking = GenericRelation(Dislike)
 
     def __str__(self):
         """
@@ -82,14 +88,9 @@ class Rating(models.Model):
     Model for rating an article
     """
     article = models.ForeignKey(
-        Article,
-        related_name="scores",
-        on_delete=models.CASCADE)
+        Article, related_name="scores", on_delete=models.CASCADE)
     rated_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="scores",
-        null=True)
+        User, on_delete=models.CASCADE, related_name="scores", null=True)
     rated_on = models.DateTimeField(auto_now_add=True)
     score = models.DecimalField(max_digits=5, decimal_places=2)
 
