@@ -22,7 +22,7 @@ class Profile(models.Model):
     favourites = models.ManyToManyField(
         'article.Article',
         related_name='favourite_by')
-
+    
     def __str__(self):
         return self.user.username
 
