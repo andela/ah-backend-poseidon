@@ -5,9 +5,11 @@ module to define the structure of the article
 from django.db import models
 from django.db.models import Avg
 from taggit.managers import TaggableManager
+from django.conf import settings
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
+
 
 
 class Article(models.Model):
@@ -43,6 +45,7 @@ class Article(models.Model):
     tags = TaggableManager(blank=True)
     favourites_count = models.IntegerField(default=0)
     view_counts = models.IntegerField(default=0)
+    read_time = models.CharField(null=True, max_length=50)
 
     def __str__(self):
         """
@@ -57,7 +60,7 @@ class Article(models.Model):
         :param kwargs:
         """
         self.slug = generate_slug(Article, self)
-
+        self.read_time = self.calculate_read_time()
         super(Article, self).save(*args, **kwargs)
 
     @property
@@ -71,6 +74,14 @@ class Article(models.Model):
 
     def is_favourite_by(self):
         return self.favourite_by.all()
+
+         
+    def calculate_read_time(self):
+        word_count = 0
+        for word in self.body:
+            word_count += len(word)/settings.WORD_LENGTH
+        result = int(word_count/settings.WORD_PER_MINUTE)
+        return str(result) +" min read"
 
     class Meta:
         get_latest_by = 'created_on'
@@ -95,3 +106,5 @@ class Rating(models.Model):
 
     class Meta:
         ordering = ["-score"]
+   
+    

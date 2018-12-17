@@ -35,12 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'corsheaders',
     'django_extensions',
     'rest_framework',
     'drf_yasg',
-
     'authors.apps.authentication',
     'authors.apps.article',
     'authors.apps.core',
@@ -107,16 +105,20 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -150,9 +152,10 @@ CORS_ORIGIN_WHITELIST = (
 AUTH_USER_MODEL = 'authentication.User'
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'authors.apps.core.exceptions.core_exception_handler',
-    'NON_FIELD_ERRORS_KEY': 'error',
-
+    'EXCEPTION_HANDLER':
+    'authors.apps.core.exceptions.core_exception_handler',
+    'NON_FIELD_ERRORS_KEY':
+    'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
@@ -173,8 +176,8 @@ SWAGGER_SETTINGS = {
 }
 
 AUTHENTICATION_BACKENDS = (
-   'rest_framework_social_oauth2.backends.DjangoOAuth2',
-   'django.contrib.auth.backends.ModelBackend',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 
     # Facebook OAuth2
     'social_core.backends.facebook.FacebookAppOAuth2',
@@ -192,12 +195,12 @@ SOCIAL_AUTH_FACEBOOK_KEY = '708091699572484'
 SOCIAL_AUTH_FACEBOOK_SECRET = '321bf96c5a31ce3b4a1a49f708c65981'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-  'locale': 'ru_RU',
-  'fields': 'id, name, email, age_range'
+    'locale': 'ru_RU',
+    'fields': 'id, name, email, age_range'
 }
 
 # google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY ='112800644277-pgj3k7s5lk4u05k9c7qilputa07pts7v.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '112800644277-pgj3k7s5lk4u05k9c7qilputa07pts7v.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'NzXaJJviKtqCwh2VVw8H0531'
 
 # twitter configuration
@@ -212,3 +215,10 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'teamposeidon12@gmail.com'
 EMAIL_HOST_PASSWORD = '@poseidon12'
+
+#reading time configurations
+
+# a measure of words proccesed in a minute
+WORD_PER_MINUTE = 200
+#definition of each word is standardized to be five characters long.
+WORD_LENGTH = 5

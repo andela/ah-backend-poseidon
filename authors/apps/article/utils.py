@@ -21,9 +21,9 @@ def generate_slug(article, self):
     new_slug = slugify(self.title)
 
     if article.objects.filter(slug=new_slug).count() > 0:
-        size = math.floor(len(self.description.split())/2)
-        new_slug = slugify(
-            new_slug + " " + " ".join(self.description.split()[:size]))
+        size = math.floor(len(self.description.split()) / 2)
+        new_slug = slugify(new_slug + " " +
+                           " ".join(self.description.split()[:size]))
 
     if article.objects.filter(slug=new_slug).count() > 0:
         new_slug = slugify(new_slug + "-" + generate_unique_number())

@@ -56,10 +56,10 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         article = get_object_or_404(queryset, slug=slug)
         author = True
 
-        #check if the user who is viewing the article is the not the author
-        #if he is not the author we increase on the number
-        # of views the article has been
-        #read whenever a get request is run.
+        #check if the user who is viewing the article is not the author
+        #if he is not the author we increase the number
+        # of views the article has been viewed
+        #whenever a get request is run.
         if article.author.username != request.user.username:
             article.view_counts += 1
             article.save()
