@@ -1,13 +1,9 @@
-from django.http import Http404
-from rest_framework import status, generics
 
 # Create your views here.
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status
-from rest_framework.generics import Http404, get_object_or_404
+from rest_framework import generics, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,7 +11,7 @@ from authors.apps.article.exceptions import NotFoundException
 from authors.apps.article.models import Article
 from authors.apps.article.renderer import ArticleJSONRenderer
 from authors.apps.article.serializers import (ArticleSerializer,
-                                              RatingSerializer)
+                                              RatingSerializer, PaginatedDataSerializer)
 
 from .filters import ArticleFilter
 
@@ -34,7 +30,7 @@ class ArticleAPIView(generics.CreateAPIView):
         creates an article
         """
         article = request.data.get("article", {})
-        article.update({"author": request.user.pk})  # request.user.pk
+        article.update({"author": request.user.pk})
         serializer = self.serializer_class(data=article, )
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -138,22 +134,25 @@ class ArticleListView(generics.ListAPIView):
         queryset = Article.objects.all()
         queryset = self.filter_queryset(queryset)
         serializer = ArticleSerializer(queryset, many=True)
-        if serializer.data == []:
+        if not serializer.data:
             return Response({
                 "detail": "No articles found after search"
             },
-                status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+                            status=status.HTTP_404_NOT_FOUND)
+
+        page_class = PaginatedDataSerializer()
+        page_class.page_size = 3
+
+        return Response(page_class.get_paginated_response(page_class.paginate_queryset(serializer.data, request)))
 
 
 class FavouritesAPIView(generics.GenericAPIView):
     """
-    Handles methods involved with selecting aan article as a favourite
+    Handles methods involved with selecting an article as a favourite
     """
     permission_classes = (IsAuthenticated, )
-    serializer_class = ArticleSerializer
 
-    def post(self, request, slug=None):
+    def put(self, request, slug=None):
         profile = self.request.user.profile
         serializer_context = {"request": request}
         try:
@@ -174,7 +173,7 @@ class FavouritesAPIView(generics.GenericAPIView):
         # to increment the favourites count field in articles
         article.favourites_count += 1
         article.save()
-        serializer = self.serializer_class(article, context=serializer_context)
+        serializer = ArticleSerializer(article, context=serializer_context, partial=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, slug=None):
@@ -196,6 +195,6 @@ class FavouritesAPIView(generics.GenericAPIView):
             if article.favourites_count > 0 else 0
         article.save()
 
-        serializer = self.serializer_class(article, context=serializer_context)
+        serializer = ArticleSerializer(article, context=serializer_context)
 
         return Response(serializer.data, status=status.HTTP_200_OK)

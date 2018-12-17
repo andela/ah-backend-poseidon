@@ -16,8 +16,8 @@ class TestFavouriteArticle(BaseTestCase):
         self.authorize_user()
         self.posting_article(post_article)
         self.article_data = self.client.get(ARTICLE_URL, format='json')
-        data = self.article_data.json().get("articles")[0]
-        self.slug = data["slug"]
+        data = self.article_data.json().get("articles")
+        self.slug = data["results"][0]["slug"]
 
     def test_favourite_your_article(self):
         """
@@ -40,7 +40,7 @@ class TestFavouriteArticle(BaseTestCase):
         method to test favouring an article that does not exist
         """
         self.authorize_user2()
-        response = self.client.post(
+        response = self.client.put(
             reverse("favourite", kwargs=dict(slug=self.slug+"-wqerwr")),
             format="json"
         )
@@ -52,7 +52,7 @@ class TestFavouriteArticle(BaseTestCase):
         method to test undoing favourite to an article that does not exist
         """
         self.authorize_user2()
-        response = self.client.post(
+        response = self.client.delete(
             reverse("favourite", kwargs=dict(slug=self.slug+"-wqerwr")),
             format="json"
         )

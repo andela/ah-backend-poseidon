@@ -2,7 +2,6 @@
 Defines functions to do common tasks
 """
 import math
-from collections import Counter
 from datetime import datetime
 
 from django.template.defaultfilters import slugify
