@@ -5,7 +5,8 @@ from django.conf.urls import url
 from django.urls import path
 
 from .views import (ArticleAPIView, ArticleListView, ArticleRetrieveAPIView,
-                    RatingsView, FavouritesAPIView, BookmarksAPIView)
+                    BookmarksAPIView, FavouritesAPIView, RatingsView,
+                    ReportAPIViews, ReportArticleView, ReportList)
 
 urlpatterns = [
     # article urls
@@ -31,5 +32,11 @@ urlpatterns = [
         '<slug>/bookmark/',
         BookmarksAPIView.as_view(),
         name="bookmark_article"),
-    path('bookmarks/', BookmarksAPIView.as_view(), name="bookmarked_articles")
+    path('bookmarks/', BookmarksAPIView.as_view(), name="bookmarked_articles"),
+    path('report/<int:pk>/', ReportAPIViews.as_view(), name="single_report"),
+    path('reports/', ReportList.as_view(), name="all_reports"),
+    path(
+        'articles/<int:pk>/report/',
+        ReportArticleView.as_view(),
+        name="report_article")
 ]

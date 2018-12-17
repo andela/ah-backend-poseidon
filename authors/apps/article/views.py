@@ -1,18 +1,17 @@
-
-# Create your views here.
-from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import filters, generics, status
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import Http404, get_object_or_404
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from authors.apps.article.exceptions import NotFoundException
-from authors.apps.article.models import Article
+from authors.apps.article.exceptions import (NotFoundException)
+from authors.apps.article.models import Article, Report
 from authors.apps.article.renderer import ArticleJSONRenderer
-from authors.apps.article.serializers import (ArticleSerializer,
-                                              RatingSerializer, PaginatedDataSerializer)
-
+from authors.apps.article.serializers import (
+    ArticleSerializer, PaginatedDataSerializer, RatingSerializer,
+    ReportSerializer)
+from .utils import invalid_string, check_if_report_exists
 from .filters import ArticleFilter
 from .utils import bookmark_validator
 
@@ -53,10 +52,10 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         article = get_object_or_404(queryset, slug=slug)
         author = True
 
-        #check if the user who is viewing the article is the not the author
-        #if he is not the author we increase on the number
+        # check if the user who is viewing the article is the not the author
+        # if he is not the author we increase on the number
         # of views the article has been
-        #read whenever a get request is run.
+        # read whenever a get request is run.
         if article.author.username != request.user.username:
             article.view_counts += 1
             article.save()
@@ -106,7 +105,7 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response({
             "detail": "Article deleted."
         },
-            status=status.HTTP_204_NO_CONTENT)
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class RatingsView(generics.GenericAPIView):
@@ -156,7 +155,9 @@ class ArticleListView(generics.ListAPIView):
         page_class = PaginatedDataSerializer()
         page_class.page_size = 3
 
-        return Response(page_class.get_paginated_response(page_class.paginate_queryset(serializer.data, request)))
+        return Response(
+            page_class.get_paginated_response(
+                page_class.paginate_queryset(serializer.data, request)))
 
 
 class FavouritesAPIView(generics.GenericAPIView):
@@ -189,7 +190,8 @@ class FavouritesAPIView(generics.GenericAPIView):
         # to increment the favourites count field in articles
         article.favourites_count += 1
         article.save()
-        serializer = ArticleSerializer(article, context=serializer_context, partial=True)
+        serializer = ArticleSerializer(
+            article, context=serializer_context, partial=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, slug=None):
@@ -259,3 +261,72 @@ class BookmarksAPIView(generics.GenericAPIView):
                             status=status.HTTP_200_OK)
         except Article.DoesNotExist:
             raise NotFound("Article not in bookmark list")
+
+
+class ReportList(generics.ListCreateAPIView):
+    """
+    Return all reports for admin.
+    """
+    permission_classes = (IsAdminUser, )
+    serializer_class = ReportSerializer
+
+    def list(self, request):
+        query = Report.objects.all()
+        serializer = ReportSerializer(query, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ReportAPIViews(generics.GenericAPIView):
+    """
+    Functions used by admin to handle reports
+    """
+    permission_classes = (IsAdminUser, )
+    serializer_class = ReportSerializer
+
+    def get(self, request, pk):
+        query = check_if_report_exists(Report, pk)
+        serializer = ReportSerializer(query)
+        query.viewed = True
+        query.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        query = check_if_report_exists(Report, pk)
+        serializer = ReportSerializer(query)
+        query.violation = True
+        query.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        query = check_if_report_exists(Report, pk)
+        query.delete()
+        return Response({
+            "details": "Report has been deleted"
+        },
+                        status=status.HTTP_200_OK)
+
+
+class ReportArticleView(generics.GenericAPIView):
+    """
+    View for user to report article
+    """
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ReportSerializer
+
+    def post(self, request, pk):
+        try:
+            article = Article.objects.get(pk=pk)
+        except Article.DoesNotExist:
+            raise NotFoundException
+        mes = request.data.get('report', {})
+        new_text = str(mes['message']).strip()
+        if not new_text:
+            return Response({
+                "details": invalid_string
+            },
+                            status=status.HTTP_400_BAD_REQUEST)
+        report = Report(
+            article=article, reported_by=request.user, message=new_text)
+        report.save()
+        serializer = ReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

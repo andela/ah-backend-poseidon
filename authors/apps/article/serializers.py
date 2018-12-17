@@ -9,7 +9,7 @@ from taggit_serializer.serializers import (TaggitSerializer,
                                            TagListSerializerField)
 
 from authors.apps.article.exceptions import NotFoundException
-from authors.apps.article.models import Article, Rating
+from authors.apps.article.models import Article, Rating, Report
 from authors.apps.authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import ProfileSerializer
@@ -35,7 +35,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         model = Article
         fields = ('slug', 'title', 'description', 'body', 'created_on',
                   'average_rating', 'user_rating', 'updated_on', 'image_url',
-                  'author', 'favourites_count', 'tags', 'view_counts')
+                  'author', 'favourites_count', 'tags', 'view_counts', 'id')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):
@@ -177,3 +177,13 @@ class PaginatedDataSerializer(PageNumberPagination):
             "current_page": self.page.number,
             "results": data
         }
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    """
+    Report article class.
+    """
+    class Meta:
+        model = Report
+        fields = ("id", "article_id", "viewed", "action", "violation",
+                  "message", "create_at")
