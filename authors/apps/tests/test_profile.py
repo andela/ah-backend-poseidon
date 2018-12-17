@@ -29,7 +29,6 @@ class ProfileTestCase(BaseTestCase):
 
         response = self.client.get(
             reverse('get_profile', kwargs={'username': 'john'}))
-
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_user_profile(self):
@@ -95,11 +94,11 @@ class UserFollowingTestCase(BaseTestCase):
         response = self.client.post(
             reverse('user_follow', kwargs={'username': 'Joan'}))
         self.assertIn(
-            'Profile does not exist. Cross-check the provided username.',
+            'Profile does not exist. Check provided username.',
             response.data['errors']['detail'])
 
         response = self.client.delete(
             reverse('user_follow', kwargs={'username': 'Joan'}))
         self.assertIn(
-            'Profile does not exist. Cross-check the provided username.',
+            'Profile does not exist. Check provided username.',
             response.data['errors']['detail'])

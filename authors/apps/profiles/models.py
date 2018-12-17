@@ -1,7 +1,9 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from ..article.models import Article
 from ..authentication.models import User
+from ..comments.models import Comment
 
 
 class Profile(models.Model):
@@ -65,3 +67,40 @@ def create_related_profile(*args, **kwargs):
 
     if instance and kwargs['created']:
         instance.profile = Profile.objects.create(user=instance)
+
+
+class Notification(models.Model):
+    """
+    Notification class handles creation
+    and sending of notifications to users
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    type = models.CharField(max_length=20)
+    body = models.CharField(max_length=200)
+    status = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.type
+
+    # notification for creation of article by author user follows
+    @receiver(post_save, sender=Article)
+    def create_notification(*args, **kwargs):
+        user = kwargs['instance'].author
+        for i in user.profile.followers():
+            follower = User.objects.get(pk=i.user_id)
+            title = 'create article'
+            body = 'article has been created by ' + user.username
+            notify = Notification(user=follower, type=title, body=body)
+            notify.save()
+
+    # notification for comment on article favouriated.
+    @receiver(post_save, sender=Comment)
+    def create_notification_comment(*args, **kwargs):
+        article_slug = kwargs['instance'].slug_id
+        article = Article.objects.get(slug=article_slug)
+        for i in article.is_favourite_by():
+            user = User.objects.get(username=i)
+            title = 'new comment on '
+            body = 'user has posted new comment'
+            notify = Notification(user=user, type=title, body=body)
+            notify.save()
