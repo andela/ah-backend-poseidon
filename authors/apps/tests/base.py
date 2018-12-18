@@ -157,3 +157,22 @@ class BaseTestCase(APITestCase):
 
     def remove_all_articles(self):
         Article.objects.all().delete()
+        
+    def data_for_bookmarks(self):
+        self.post_articles_for_search()
+        self.authorize_user2()
+        article_data = self.client.get(ARTICLE_URL, format='json')
+        data = article_data.json().get("articles")
+        slug = data["results"][0]["slug"]
+        return slug
+
+    def url_for_bookmarks(self):
+        slug = self.data_for_bookmarks()
+        url = reverse('bookmark_article', kwargs={'slug': slug})
+        return url
+
+    def url_for_invalid_slug(self):
+        slug = self.data_for_bookmarks()
+        slug = slug + 'hello'
+        url = reverse('bookmark_article', kwargs={'slug': slug})
+        return url

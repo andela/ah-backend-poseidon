@@ -43,6 +43,9 @@ class Article(models.Model):
     tags = TaggableManager(blank=True)
     favourites_count = models.IntegerField(default=0)
     view_counts = models.IntegerField(default=0)
+    # bookmarks field is a manytomany descriptor for articles to users.
+    bookmarks = models.ManyToManyField(
+        'authentication.User', related_name="bookmark_article")
 
     def __str__(self):
         """
@@ -66,11 +69,22 @@ class Article(models.Model):
         method to calculate the average rating of the article.
         """
         ratings = self.scores.all().aggregate(score=Avg("score"))
-        return float('%.2f' % (ratings["score"]
-                               if ratings['score'] else 0))
+        return float('%.2f' % (ratings["score"] if ratings['score'] else 0))
 
     def is_favourite_by(self):
         return self.favourite_by.all()
+
+    def bookmark(self, user):
+        """bookmark article"""
+        self.bookmarks.add(user)
+
+    def unbookmark(self, user):
+        """unbookmark article"""
+        self.bookmarks.remove(user)
+
+    def is_bookmarked(self, user):
+        """check for bookmarked article"""
+        return self.bookmarks.filter(id=user.pk).exists()
 
     class Meta:
         get_latest_by = 'created_on'
@@ -82,14 +96,9 @@ class Rating(models.Model):
     Model for rating an article
     """
     article = models.ForeignKey(
-        Article,
-        related_name="scores",
-        on_delete=models.CASCADE)
+        Article, related_name="scores", on_delete=models.CASCADE)
     rated_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="scores",
-        null=True)
+        User, on_delete=models.CASCADE, related_name="scores", null=True)
     rated_on = models.DateTimeField(auto_now_add=True)
     score = models.DecimalField(max_digits=5, decimal_places=2)
 
