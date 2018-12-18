@@ -7,7 +7,6 @@ from .test_validation import AccountTests
 from . import (new_user, user_login)
 
 
-
 class PassordResetTests(APITestCase):
     """handles user reseting passwordtests"""
     account_tests = AccountTests()
@@ -56,7 +55,7 @@ class PassordResetTests(APITestCase):
 
     def test_confirm_reset(self):
         """"This method tests successful reseting of a user password"""
-        
+
         self.password_update = {"user": {"password": "Newpaswd1"}}
         res = self.client.post("/api/users/", new_user, format="json")
         token = res.data['token']

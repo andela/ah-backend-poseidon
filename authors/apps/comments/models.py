@@ -2,6 +2,7 @@
 from django.db import models
 from authors.apps.article.models import Article
 from authors.apps.authentication.models import User
+from simple_history.models import HistoricalRecords
 
 
 class Comment(models.Model):
@@ -16,6 +17,7 @@ class Comment(models.Model):
     selected_text = models.TextField(blank=True, null=True)
     start_index_position = models.IntegerField(blank=True, null=True)
     end_index_position = models.IntegerField(blank=True, null=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return str(self.commented_by.username)

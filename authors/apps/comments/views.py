@@ -9,8 +9,9 @@ from rest_framework.serializers import ValidationError
 from authors.apps.article.models import Article
 
 from .models import Comment
-from .renderer import CommentJSONRenderer, CommentThreadJSONRenderer
-from .serializers import CommentChildSerializer, CommentSerializer
+from .renderer import (CommentJSONRenderer, CommentThreadJSONRenderer)
+from .serializers import (CommentSerializer, CommentChildSerializer,
+                          CommentHistorySerializer)
 from .utils import HighlightedSection
 
 
@@ -63,7 +64,7 @@ class CommentsAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response({
             "message": "This comment has been deleted successfully"
         },
-                        status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK)
 
     def check_user(self, instance, request):
         if instance.commented_by != request.user:
@@ -75,6 +76,23 @@ class CommentsAPIView(generics.RetrieveUpdateDestroyAPIView):
         for field in self.lookup_fields:
             filter[field] = self.kwargs[field]
         return get_object_or_404(queryset, **filter)
+
+    def update(self, request, *args, **kwargs):
+        """
+        This function updates a given comment
+        for an article with given id and slag
+        """
+        comment = request.data.get("comment", {})
+        article_slug = self.kwargs['slug']
+        slug = get_object_or_404(Article, slug=article_slug)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=comment, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        smg = "This comment has been updated successfully"
+        return Response({
+            "message": smg
+        }, status=status.HTTP_200_OK)
 
 
 class CommentsListThreadsCreateView(generics.RetrieveAPIView):
@@ -99,5 +117,21 @@ class CommentsListThreadsCreateView(generics.RetrieveAPIView):
         slug = get_object_or_404(Article, slug=article_slug)
         comment = self.queryset.filter(
             slug=article_slug, parent=self.kwargs['id'])
+        serializer = self.serializer_class(comment, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CommentHistoryListView(generics.ListCreateAPIView):
+    """
+    Retrieve comments history with
+    comment id
+    """
+    serializer_class = CommentHistorySerializer
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (CommentJSONRenderer,)
+
+    def get(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+        comment = Comment.history.filter(id=id)
         serializer = self.serializer_class(comment, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

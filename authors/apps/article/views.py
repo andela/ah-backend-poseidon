@@ -97,7 +97,7 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response({
             "detail": "Article deleted."
         },
-                        status=status.HTTP_204_NO_CONTENT)
+            status=status.HTTP_204_NO_CONTENT)
 
 
 class RatingsView(generics.GenericAPIView):
@@ -142,7 +142,7 @@ class ArticleListView(generics.ListAPIView):
             return Response({
                 "detail": "No articles found after search"
             },
-                            status=status.HTTP_404_NOT_FOUND)
+                status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -153,7 +153,7 @@ class FavouritesAPIView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = ArticleSerializer
 
-    def post(self,request, slug=None):
+    def post(self, request, slug=None):
         profile = self.request.user.profile
         serializer_context = {"request": request}
         try:

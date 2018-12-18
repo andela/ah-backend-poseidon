@@ -113,8 +113,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             'username': self.username,
             'exp': int(exp_date.strftime('%s'))
         },
-                           settings.SECRET_KEY,
-                           algorithm='HS256')
+            settings.SECRET_KEY,
+            algorithm='HS256')
 
         return token.decode('utf-8')
 
