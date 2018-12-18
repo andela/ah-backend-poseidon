@@ -4,7 +4,7 @@ Test articles app
 from django.urls import reverse
 from rest_framework import status
 
-from . import post_article, thread, comment
+from . import post_article, thread, comment, highlight_comment_1, highlight_comment_2
 
 from authors.apps.tests.base import BaseTestCase
 
@@ -70,7 +70,7 @@ class TestComment(BaseTestCase):
     def test_get_reply_to_comment(self):
         """
             testing for a single reply
-            
+
         """
         self.user_access()
         self.posting_article(post_article)
@@ -98,7 +98,7 @@ class TestComment(BaseTestCase):
     def test_get_all_comments(self):
         """
             test to get all comments
-            
+
         """
         self.user_access()
         self.posting_article(post_article)
@@ -106,8 +106,6 @@ class TestComment(BaseTestCase):
         url = f'/api/{slug}/comments/'
         response = self.client.get(url, data=comment, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    
 
     def test_delete_comment(self):
         """
@@ -122,3 +120,21 @@ class TestComment(BaseTestCase):
         response = self.client.delete(
             f'/api/{slug}/comments/{comment_id}', data=thread, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_error_when_no_data_highlighted(self):
+        self.user_access()
+        self.posting_article(post_article)
+        slug = self.slugger()
+        url = f'/api/{slug}/comments/'
+        response = self.client.post(
+            url, data=highlight_comment_1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_error_when_non_interger_used_to_highlight(self):
+        self.user_access()
+        self.posting_article(post_article)
+        slug = self.slugger()
+        url = f'/api/{slug}/comments/'
+        response = self.client.post(
+            url, data=highlight_comment_2, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
