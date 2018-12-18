@@ -4,6 +4,7 @@ Module to handle app serializers
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.pagination import PageNumberPagination
 from taggit_serializer.serializers import (TaggitSerializer,
                                            TagListSerializerField)
 
@@ -157,3 +158,22 @@ class RatingSerializer(serializers.ModelSerializer):
         """
         model = Rating
         fields = ("score", "rated_by", "rated_on", "article")
+
+
+class PaginatedDataSerializer(PageNumberPagination):
+    """
+    Pagination class
+    """
+
+    def get_paginated_response(self, data):
+        """
+        Formats page responses to include page links
+        """
+        return {
+            "links": {
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link()
+            },
+            "current_page": self.page.number,
+            "results": data
+        }

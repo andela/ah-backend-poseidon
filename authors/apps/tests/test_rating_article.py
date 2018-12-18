@@ -17,8 +17,8 @@ class TestRatingArticle(BaseTestCase):
         self.authorize_user()
         self.posting_article(post_article)
         self.article_data = self.client.get(ARTICLE_URL, format='json')
-        data = self.article_data.json().get("articles")[0]
-        self.slug = data["slug"]
+        data = self.article_data.json().get("articles")
+        self.slug = data["results"][0]["slug"]
 
     def test_rate_your_article(self):
         """

@@ -7,7 +7,7 @@ from authors.apps.profiles.models import Notification
 
 
 class BaseTestCase(APITestCase):
-    "Has test helper methods."
+    """Has test helper methods."""
 
     def add_credentials(self, response):
         """adds authentication credentials in the request header"""
@@ -58,15 +58,15 @@ class BaseTestCase(APITestCase):
         self.authorize_user_reg()
         self.posting_article(post_article)
         response = self.client.get('/api/articles', format='json')
-        data = response.json().get("articles")[0]
-        return data["slug"]
+        data = response.json().get("articles")
+        return data["results"][0]["slug"]
 
     def slugger2(self):
         self.authorize_user()
         self.posting_article(post_article)
         response = self.client.get('/api/articles', format='json')
-        data = response.json().get("articles")[0]
-        return data["slug"]
+        data = response.json().get("articles")
+        return data["results"][0]["slug"]
 
     def deleter(self, slug):
         """
@@ -101,8 +101,8 @@ class BaseTestCase(APITestCase):
         """
         self.authorize_user2()
         response = self.client.get(ARTICLE_URL, format='json')
-        data = response.json().get("articles")[0]
-        slug = data["slug"]
+        data = response.json().get("articles")
+        slug = data["results"][0]["slug"]
 
         return self.client.post(
             reverse("rating", kwargs=dict(slug=slug)),
@@ -120,7 +120,7 @@ class BaseTestCase(APITestCase):
         """
         choose an article as favourite article
         """
-        return self.client.post(
+        return self.client.put(
             reverse("favourite", kwargs=dict(slug=slug)),
             format="json"
         )

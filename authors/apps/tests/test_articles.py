@@ -5,8 +5,8 @@ from django.urls import reverse
 
 from authors.apps.tests.base import BaseTestCase
 
-from . import (ARTICLE_URL, article_missing_data, new_user, post_article,
-               post_article_2, update_article, user_login)
+from . import (ARTICLE_URL, article_missing_data, post_article,
+               update_article)
 
 
 class TestArticle(BaseTestCase):
@@ -44,7 +44,6 @@ class TestArticle(BaseTestCase):
             count += 1
         response = self.client.get(ARTICLE_URL, format='json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json().get("articles")), 3)
 
     def test_get_specific_article(self):
         slug = self.slugger2()
@@ -61,14 +60,14 @@ class TestArticle(BaseTestCase):
         response = self.client.get(ARTICLE_URL, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
+        self.assertIsInstance(response.json().get("articles"), dict)
 
     def test_update_article(self):
         self.authorize_user()
         self.posting_article(post_article)
         response = self.client.get(ARTICLE_URL, format='json')
-        data = response.json().get("articles")[0]
-        slug = data["slug"]
+        data = response.json().get("articles")
+        slug = data["results"][0]["slug"]
         response = self.client.put(
             reverse("get_update_destroy_article", kwargs=dict(slug=slug)),
             data=update_article,
@@ -81,8 +80,8 @@ class TestArticle(BaseTestCase):
         self.authorize_user()
         self.posting_article(post_article)
         response = self.client.get(ARTICLE_URL, format='json')
-        data = response.json().get("articles")[0]
-        slug = data["slug"]
+        data = response.json().get("articles")
+        slug = data["results"][0]["slug"]
         response = self.deleter(slug)
         self.assertEqual(response.status_code, 204)
         self.assertIn('detail', response.data)
@@ -103,7 +102,6 @@ class TestArticle(BaseTestCase):
         response = self.client.get(ARTICLE_URL + '?author=Jac', format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
 
     def test_search_by_title(self):
         """test search by article title"""
@@ -112,7 +110,7 @@ class TestArticle(BaseTestCase):
             ARTICLE_URL + '?title=Who is he', format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
+        self.assertIsInstance(response.json().get("articles"), dict)
 
     def test_search_by_tags(self):
         """assert filter by tags"""
@@ -120,7 +118,7 @@ class TestArticle(BaseTestCase):
         response = self.client.get(ARTICLE_URL + '?tags=python', format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
+        self.assertIsInstance(response.json().get("articles"), dict)
 
     def test_search_by_keyword(self):
         """test search by keyword"""
@@ -129,7 +127,7 @@ class TestArticle(BaseTestCase):
             ARTICLE_URL + '?keyword=Pythonis', format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
+        self.assertIsInstance(response.json().get("articles"), dict)
 
     def test_search_multiple_params(self):
         """test search by multiple parameters"""
@@ -139,7 +137,7 @@ class TestArticle(BaseTestCase):
             format='json')
         self.assertEqual(response.status_code, 200)
         self.assertIn("articles", response.json())
-        self.assertIsInstance(response.json().get("articles"), list)
+        self.assertIsInstance(response.json().get("articles"), dict)
 
     def test_search_by_non_existing_author(self):
         """check if username filtered against doesnot exist"""
