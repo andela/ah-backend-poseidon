@@ -33,9 +33,9 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         class behaviours
         """
         model = Article
-        fields = ('slug', 'title', 'description', 'body',
-                  'created_on', 'average_rating', 'user_rating',
-                  'updated_on', 'image_url', 'author', 'favourites_count', 'tags')
+        fields = ('slug', 'title', 'description', 'body', 'created_on',
+                  'average_rating', 'user_rating', 'updated_on', 'image_url',
+                  'author', 'favourites_count', 'tags', 'view_counts')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):

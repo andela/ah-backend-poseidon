@@ -50,9 +50,21 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         """
         queryset = Article.objects.all()
         article = get_object_or_404(queryset, slug=slug)
+        author = True
 
+        #check if the user who is viewing the article is the not the author
+        #if he is not the author we increase on the number
+        # of views the article has been
+        #read whenever a get request is run.
+        if article.author.username != request.user.username:
+            article.view_counts += 1
+            article.save()
+            author = False
         serializer = self.serializer_class(
             article, context={'request': request})
+
+        if not author:
+            serializer.fields.pop('view_counts', None)
         return Response(serializer.data)
 
     def update(self, request, slug=None):
@@ -158,15 +170,18 @@ class FavouritesAPIView(generics.GenericAPIView):
         try:
             article = Article.objects.get(slug=slug)
             if article.author == request.user:
-                return Response({
-                    "message": "Please favourite another author's article",
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "message": "Please favourite another author's article",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST)
         except Article.DoesNotExist:
             raise NotFound("Article not found")
         if profile.is_favourite(article):
             return Response({
                 "message": "Article is already your favourite"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            },
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # add the article to the user profile as favourite
         profile.favourite(article)
@@ -188,7 +203,8 @@ class FavouritesAPIView(generics.GenericAPIView):
         if not profile.is_favourite(article=article):
             return Response({
                 "message": "Article is not your favourites list"
-            }, status=status.HTTP_404_NOT_FOUND)
+            },
+                            status=status.HTTP_404_NOT_FOUND)
 
         profile.not_favourite(article=article)
         article.favourites_count = article.favourites_count-1 \

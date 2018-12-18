@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 from . import (new_user, user_login, post_article, post_article_2, data2,
                ARTICLE_URL, user2_login, new_user_2)
 from authors.apps.authentication.models import User
+from authors.apps.article.models import Article
 from authors.apps.profiles.models import Notification
 
 
@@ -11,8 +12,7 @@ class BaseTestCase(APITestCase):
 
     def add_credentials(self, response):
         """adds authentication credentials in the request header"""
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + response)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response)
 
     def register_user(self, user_data):
         """register new user"""
@@ -121,18 +121,14 @@ class BaseTestCase(APITestCase):
         choose an article as favourite article
         """
         return self.client.put(
-            reverse("favourite", kwargs=dict(slug=slug)),
-            format="json"
-        )
+            reverse("favourite", kwargs=dict(slug=slug)), format="json")
 
     def undo_favouring(self, slug):
         """
         delete an article from your favourites article
         """
         return self.client.delete(
-            reverse("undo_favourite", kwargs=dict(slug=slug)),
-            format="json"
-        )
+            reverse("undo_favourite", kwargs=dict(slug=slug)), format="json")
 
     def create_notification(self, username):
         user = User.objects.get(username=username)
@@ -141,8 +137,23 @@ class BaseTestCase(APITestCase):
         notify = Notification(user=user, type=title, body=body)
         notify.save()
         return notify.id
-        
+
     def regiter_user_and_post_article(self):
         self.user_access()
         self.posting_article(post_article)
         return True
+
+    def create_test_article_with_user(self):
+        author = User(
+            username=new_user_2['user']['username'],
+            email=new_user_2['user']['email'],
+            password=new_user['user']['password'])
+        author.save()
+
+        article = Article(
+            author=author, body='lorem ipsum', title='lorem ipsum')
+        article.save()
+        return article
+
+    def remove_all_articles(self):
+        Article.objects.all().delete()

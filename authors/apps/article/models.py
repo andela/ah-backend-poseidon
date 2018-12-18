@@ -34,7 +34,6 @@ class Article(models.Model):
         error_messages={"required": "Add a body for your article."})
 
     user_rating = models.CharField(max_length=10, default='0')
-
     # auto_now_add sets the timezone.now when an instance is created
     created_on = models.DateTimeField(auto_now_add=True)
     # auto_now updates the field every time the save method is called
@@ -43,6 +42,7 @@ class Article(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     tags = TaggableManager(blank=True)
     favourites_count = models.IntegerField(default=0)
+    view_counts = models.IntegerField(default=0)
 
     def __str__(self):
         """

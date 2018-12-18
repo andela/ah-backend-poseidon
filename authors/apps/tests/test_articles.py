@@ -45,12 +45,30 @@ class TestArticle(BaseTestCase):
         response = self.client.get(ARTICLE_URL, format='json')
         self.assertEqual(response.status_code, 200)
 
+    def test_retrieve_article_with_stats_succeeds(self):
+        article = self.create_test_article_with_user()
+
+        self.authorize_user()
+        url = reverse(
+            "get_update_destroy_article", kwargs=dict(slug=article.slug))
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, 200)
+
     def test_get_specific_article(self):
         slug = self.slugger2()
         response = self.client.get(
             reverse("get_update_destroy_article", kwargs=dict(slug=slug)),
             format='json')
         self.assertEqual(response.status_code, 200)
+        self.assertIn('articles', response.json())
+        self.assertIsInstance(response.json().get("articles"), dict)
+
+    def test_not_retrive_article(self):
+        slug = self.slugger2()
+        response = self.client.get(
+            reverse("get_update_destroy_article", kwargs=dict(slug="slug")),
+            format='json')
+        self.assertEqual(response.status_code, 404)
         self.assertIn('articles', response.json())
         self.assertIsInstance(response.json().get("articles"), dict)
 
@@ -84,15 +102,6 @@ class TestArticle(BaseTestCase):
         slug = data["results"][0]["slug"]
         response = self.deleter(slug)
         self.assertEqual(response.status_code, 204)
-        self.assertIn('detail', response.data)
-        self.assertIsInstance(response.data.get("detail"), str)
-
-    def test_delete_not_found_article(self):
-        self.authorize_user()
-        response = self.client.delete(
-            reverse("get_update_destroy_article", kwargs=dict(slug="54")),
-            format='json')
-        self.assertEqual(response.status_code, 404)
         self.assertIn('detail', response.data)
         self.assertIsInstance(response.data.get("detail"), str)
 

@@ -1,5 +1,4 @@
-from django.apps import AppConfig
-
+# from django.apps import AppConfig
 
 # class ArticleConfig(AppConfig):
 #     name = 'authors.apps.article'
