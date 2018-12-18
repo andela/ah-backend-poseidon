@@ -14,6 +14,7 @@ from authors.apps.article.serializers import (ArticleSerializer,
                                               RatingSerializer, PaginatedDataSerializer)
 
 from .filters import ArticleFilter
+from .utils import bookmark_validator
 
 
 class ArticleAPIView(generics.CreateAPIView):
@@ -214,3 +215,47 @@ class FavouritesAPIView(generics.GenericAPIView):
         serializer = ArticleSerializer(article, context=serializer_context)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class BookmarksAPIView(generics.GenericAPIView):
+    """
+    Views for bookmark requests
+    """
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, slug=None):
+        try:
+            article = Article.objects.get(slug=slug)
+            rv = bookmark_validator(article, request)
+            if rv is None:
+                article.bookmark(request.user)
+                return Response({
+                    "message": "Article bookmarked"
+                },
+                                status=status.HTTP_201_CREATED)
+            return rv
+        except Article.DoesNotExist:
+            raise NotFound("Article not found")
+
+    def get(self, request):
+        user = request.user
+        queryset = Article.objects.filter(bookmarks__id=user.pk)
+        serializer = ArticleSerializer(queryset, many=True)
+        if not serializer.data:
+            return Response({
+                "message": "No articles bookmarked yet"
+            },
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    def delete(self, request, slug=None):
+        try:
+            article = Article.objects.get(slug=slug)
+            user = request.user
+            article.unbookmark(user)
+            return Response({
+                "message": "Article unbookmarked"
+            },
+                            status=status.HTTP_200_OK)
+        except Article.DoesNotExist:
+            raise NotFound("Article not in bookmark list")
