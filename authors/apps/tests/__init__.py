@@ -108,6 +108,16 @@ thread = {"comment": {
     "body": "This is a comment"
 }}
 
+highlight_comment_1 = {"comment": {
+    "body": "This is a comment",
+    "start_index_position": 0,
+    "end_index_position": 0
+}}
 
+highlight_comment_2 = {"comment": {
+    "body": "This is a comment",
+    "start_index_position": "",
+    "end_index_position": 0
+}}
 ARTICLE_URL = '/api/articles'
 new_username = new_user['user']['username']

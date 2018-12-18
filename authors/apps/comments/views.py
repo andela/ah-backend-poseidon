@@ -1,16 +1,17 @@
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, serializers, status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly, AllowAny)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
+
 from authors.apps.article.models import Article
+
 from .models import Comment
-from .renderer import (CommentJSONRenderer, CommentThreadJSONRenderer)
-from .serializers import CommentSerializer, CommentChildSerializer
+from .renderer import CommentJSONRenderer, CommentThreadJSONRenderer
+from .serializers import CommentChildSerializer, CommentSerializer
+from .utils import HighlightedSection
 
 
 class CommentCreateListView(generics.ListCreateAPIView):
@@ -22,16 +23,16 @@ class CommentCreateListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticated, )
     renderer_classes = (CommentJSONRenderer, )
-    queryset = Comment.objects.all().filter()
+    queryset = Comment.objects.all().filter(parent__isnull=True)
     lookup_field = 'slug'
+    highlighted_section = HighlightedSection()
 
     def post(self, request, *args, **kwargs):
         """
         This method posts a comment to article
         """
-        article_slug = self.kwargs['slug']
-        slug = get_object_or_404(Article, slug=article_slug)
-        comment = request.data.get('comment', {})
+        comment, slug = self.highlighted_section.get_selected_text(
+            request, self.kwargs['slug'])
         serializer = self.serializer_class(data=comment, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(commented_by=self.request.user, slug=slug)
@@ -40,7 +41,7 @@ class CommentCreateListView(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
 
         article_slug = self.kwargs['slug']
-        slug = get_object_or_404(Article, slug=article_slug)  # findout
+        slug = get_object_or_404(Article, slug=article_slug)
         comment = self.queryset.filter(slug=article_slug)
         serializer = self.serializer_class(comment, many=True)
         return Response(serializer.data)
@@ -57,7 +58,6 @@ class CommentsAPIView(generics.RetrieveUpdateDestroyAPIView):
         article_slug = self.kwargs['slug']
         slug = get_object_or_404(Article, slug=article_slug)
         instance = self.get_object()
-        #raise Exception(instance)
         self.check_user(instance, request)
         self.perform_destroy(instance)
         return Response({
@@ -71,8 +71,6 @@ class CommentsAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         queryset = self.get_queryset()
-        # Get the base queryset
-        # queryset = self.filter_queryset(queryset)  # Apply any filter backends
         filter = {}
         for field in self.lookup_fields:
             filter[field] = self.kwargs[field]

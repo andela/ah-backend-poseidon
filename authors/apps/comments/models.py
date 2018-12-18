@@ -13,6 +13,9 @@ class Comment(models.Model):
         "self", null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    selected_text = models.TextField(blank=True, null=True)
+    start_index_position = models.IntegerField(blank=True, null=True)
+    end_index_position = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return str(self.commented_by.username)
