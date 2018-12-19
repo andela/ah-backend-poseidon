@@ -41,16 +41,18 @@ urlpatterns = [
         'articles/<int:pk>/report/',
         ReportArticleView.as_view(),
         name="report_article"),
-    path('<slug>/favourite/',
-         FavouritesAPIView.as_view(), name="favourite"),
-    path('<slug>/favourite/',
-         FavouritesAPIView.as_view(), name="undo_favourite"),
-    path('articles/<pk>/like/',
-         ChoicesView.as_view(
+    path('<slug>/favourite/', FavouritesAPIView.as_view(), name="favourite"),
+    path(
+        '<slug>/favourite/',
+        FavouritesAPIView.as_view(),
+        name="undo_favourite"),
+    path(
+        'articles/<pk>/like/',
+        ChoicesView.as_view(
             model=Article,
             vote_type=LikeDislike.LIKE,
             manager=LikeDislikeManager),
-         name='article_like'),
+        name='article_like'),
     path(
         'articles/<pk>/dislike/',
         ChoicesView.as_view(

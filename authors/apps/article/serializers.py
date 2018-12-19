@@ -37,7 +37,8 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
         model = Article
         fields = ('slug', 'title', 'description', 'body', 'created_on',
                   'average_rating', 'user_rating', 'updated_on', 'image_url',
-                  'author', 'tags', 'favourites_count', 'id',  'likes', 'dislikes')
+                  'author', 'favourites_count', 'tags', 'view_counts',
+                  'read_time', 'id', 'likes', 'dislikes')
 
     @staticmethod
     def validate_for_update(data: dict, user, slug):
@@ -193,6 +194,7 @@ class ReportSerializer(serializers.ModelSerializer):
     """
     Report article class.
     """
+
     class Meta:
         model = Report
         fields = ("id", "article_id", "viewed", "action", "violation",

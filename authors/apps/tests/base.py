@@ -199,6 +199,7 @@ class BaseTestCase(APITestCase):
         url = reverse('report_article', kwargs={'pk': id})
         response = self.client.post(url, data=report_data, format='json')
         return response
+
     def followers_and_following(self):
         res = self.register_user(new_user_2)
         self.authorize_user()
