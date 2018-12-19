@@ -81,26 +81,3 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.type
-
-    # notification for creation of article by author user follows
-    @receiver(post_save, sender=Article)
-    def create_notification(*args, **kwargs):
-        user = kwargs['instance'].author
-        for i in user.profile.followers():
-            follower = User.objects.get(pk=i.user_id)
-            title = 'create article'
-            body = 'article has been created by ' + user.username
-            notify = Notification(user=follower, type=title, body=body)
-            notify.save()
-
-    # notification for comment on article favouriated.
-    @receiver(post_save, sender=Comment)
-    def create_notification_comment(*args, **kwargs):
-        article_slug = kwargs['instance'].slug_id
-        article = Article.objects.get(slug=article_slug)
-        for i in article.is_favourite_by():
-            user = User.objects.get(username=i)
-            title = 'new comment on '
-            body = 'user has posted new comment'
-            notify = Notification(user=user, type=title, body=body)
-            notify.save()

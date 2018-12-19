@@ -7,6 +7,7 @@ from datetime import datetime
 from django.template.defaultfilters import slugify
 from rest_framework import status
 from rest_framework.response import Response
+from authors.apps.article.exceptions import (ReportDoesNotExist)
 
 
 def generate_slug(article, self):
@@ -57,3 +58,13 @@ def bookmark_validator(article, request):
             "message": "Article already bookmarked by you",
         },
                         status=status.HTTP_400_BAD_REQUEST)
+
+
+def check_if_report_exists(Report, pk):
+        try:
+            query = Report.objects.get(pk=pk)
+        except Report.DoesNotExist:
+            raise ReportDoesNotExist
+        return query
+
+invalid_string = "Message is not valid string"

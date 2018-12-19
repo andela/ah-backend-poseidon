@@ -157,7 +157,7 @@ class BaseTestCase(APITestCase):
 
     def remove_all_articles(self):
         Article.objects.all().delete()
-        
+
     def data_for_bookmarks(self):
         self.post_articles_for_search()
         self.authorize_user2()
@@ -176,3 +176,25 @@ class BaseTestCase(APITestCase):
         slug = slug + 'hello'
         url = reverse('bookmark_article', kwargs={'slug': slug})
         return url
+
+    def create_superuser(self, username, password):
+        user = User.objects.create_superuser(
+            username=username, password=password)
+
+    def login_superuser(self):
+        username = new_user['user']['username']
+        password = new_user['user']['password']
+        self.create_superuser(username, password)
+        response = self.login_user(user_login)
+        self.add_credentials(response.data['token'])
+
+    def return_new_article_id(self):
+        article = self.posting_article(post_article)
+        return article.data['id']
+
+    def report_article(self, report_data):
+        self.user2_access()
+        id = self.return_new_article_id()
+        url = reverse('report_article', kwargs={'pk': id})
+        response = self.client.post(url, data=report_data, format='json')
+        return response
