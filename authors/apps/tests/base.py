@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from . import (new_user, user_login, post_article, post_article_2, data2,
-               ARTICLE_URL, user2_login, new_user_2)
+               ARTICLE_URL, user2_login, new_user_2, comment)
 from authors.apps.authentication.models import User
 from authors.apps.article.models import Article
 from authors.apps.profiles.models import Notification
@@ -199,6 +199,7 @@ class BaseTestCase(APITestCase):
         url = reverse('report_article', kwargs={'pk': id})
         response = self.client.post(url, data=report_data, format='json')
         return response
+
     def followers_and_following(self):
         res = self.register_user(new_user_2)
         self.authorize_user()
@@ -209,4 +210,11 @@ class BaseTestCase(APITestCase):
     def create_article_for_liking(self):
         slug = self.slugger2()
         pk = Article.objects.get(slug=slug).pk
-        return pk
+        return pk, slug
+
+    def post_comment(self):
+        slug = self.create_article_for_liking()
+        url = '/api/{}/comments/'.format(slug[1])
+        res = self.client.post(url, data=comment, format='json')
+
+        return res.data['id']

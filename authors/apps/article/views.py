@@ -340,9 +340,10 @@ class ReportArticleView(generics.GenericAPIView):
 
 class ChoicesView(generics.GenericAPIView):
     "Implements the like and dislike endpoints."
-    model = None
+    model = Article
     vote_type = None
     manager = None
+    serializer = ArticleSerializer
 
     def post(self, request, pk):
         obj = self.model.objects.get(pk=pk)
@@ -360,6 +361,6 @@ class ChoicesView(generics.GenericAPIView):
 
         except LikeDislike.DoesNotExist:
             obj.votes.create(user=request.user, vote=self.vote_type)
-        serializer = ArticleSerializer(obj)
+        serializer = self.serializer(obj)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

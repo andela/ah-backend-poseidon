@@ -1,8 +1,10 @@
 # Create your models here.
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
 from authors.apps.article.models import Article
 from authors.apps.authentication.models import User
 from simple_history.models import HistoricalRecords
+from authors.apps.article.models import LikeDislike
 
 
 class Comment(models.Model):
@@ -18,6 +20,7 @@ class Comment(models.Model):
     start_index_position = models.IntegerField(blank=True, null=True)
     end_index_position = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
+    votes = GenericRelation(LikeDislike, related_query_name='comments')
 
     def __str__(self):
         return str(self.commented_by.username)
