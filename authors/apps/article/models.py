@@ -5,9 +5,39 @@ module to define the structure of the article
 from django.db import models
 from django.db.models import Avg
 from taggit.managers import TaggableManager
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
 
 from authors.apps.article.utils import generate_slug
 from authors.apps.authentication.models import User
+
+
+class LikeDislikeManager(models.Manager):
+    # Gets all the votes greater than 0. In this case they're likes.
+    def likes(self):
+        return self.get_queryset().filter(vote__gt=0)
+
+    # Gets all the votes less than 0. In this case they're dislikes.
+    def dislikes(self):
+        return self.get_queryset().filter(vote__lt=0)
+
+
+class LikeDislike(models.Model):
+    "Likes and Dislikes model."
+    LIKE = 1
+    DISLIKE = -1
+
+    VOTES = ((DISLIKE, 'Dislike'), (LIKE, 'Like'))
+
+    vote = models.SmallIntegerField(choices=VOTES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+
+    objects = LikeDislikeManager()
 
 
 class Article(models.Model):
@@ -46,6 +76,7 @@ class Article(models.Model):
     # bookmarks field is a manytomany descriptor for articles to users.
     bookmarks = models.ManyToManyField(
         'authentication.User', related_name="bookmark_article")
+    votes = GenericRelation(LikeDislike, related_query_name='articles')
 
     def __str__(self):
         """

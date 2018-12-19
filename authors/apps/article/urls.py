@@ -6,7 +6,9 @@ from django.urls import path
 
 from .views import (ArticleAPIView, ArticleListView, ArticleRetrieveAPIView,
                     BookmarksAPIView, FavouritesAPIView, RatingsView,
-                    ReportAPIViews, ReportArticleView, ReportList)
+                    ReportAPIViews, ReportArticleView, ReportList, ChoicesView)
+from .models import LikeDislike, LikeDislikeManager
+from .models import Article
 
 urlpatterns = [
     # article urls
@@ -38,5 +40,22 @@ urlpatterns = [
     path(
         'articles/<int:pk>/report/',
         ReportArticleView.as_view(),
-        name="report_article")
+        name="report_article"),
+    path('<slug>/favourite/',
+         FavouritesAPIView.as_view(), name="favourite"),
+    path('<slug>/favourite/',
+         FavouritesAPIView.as_view(), name="undo_favourite"),
+    path('articles/<pk>/like/',
+         ChoicesView.as_view(
+            model=Article,
+            vote_type=LikeDislike.LIKE,
+            manager=LikeDislikeManager),
+         name='article_like'),
+    path(
+        'articles/<pk>/dislike/',
+        ChoicesView.as_view(
+            model=Article,
+            vote_type=LikeDislike.DISLIKE,
+            manager=LikeDislikeManager),
+        name='article_dislike'),
 ]

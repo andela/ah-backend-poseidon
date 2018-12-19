@@ -1,3 +1,6 @@
+from django.http import Http404
+from rest_framework import status, generics
+from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.exceptions import NotFound
@@ -14,6 +17,8 @@ from authors.apps.article.serializers import (
 from .utils import invalid_string, check_if_report_exists
 from .filters import ArticleFilter
 from .utils import bookmark_validator
+from django.contrib.contenttypes.models import ContentType
+from .models import LikeDislike
 
 
 class ArticleAPIView(generics.CreateAPIView):
@@ -329,4 +334,32 @@ class ReportArticleView(generics.GenericAPIView):
             article=article, reported_by=request.user, message=new_text)
         report.save()
         serializer = ReportSerializer(report)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ChoicesView(generics.GenericAPIView):
+    "Implements the like and dislike endpoints."
+    model = None
+    vote_type = None
+    manager = None
+
+    def post(self, request, pk):
+        obj = self.model.objects.get(pk=pk)
+        try:
+            likedislike = LikeDislike.objects.get(
+                content_type=ContentType.objects.get_for_model(obj),
+                object_id=obj.id,
+                user=request.user)
+            if likedislike.vote is not self.vote_type:
+                likedislike.vote = self.vote_type
+                likedislike.save(update_fields=['vote'])
+
+            else:
+                likedislike.delete()
+
+        except LikeDislike.DoesNotExist:
+            obj.votes.create(user=request.user, vote=self.vote_type)
+        serializer = ArticleSerializer(obj)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)

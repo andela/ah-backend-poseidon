@@ -5,6 +5,7 @@ from . import (new_user, user_login, post_article, post_article_2, data2,
 from authors.apps.authentication.models import User
 from authors.apps.article.models import Article
 from authors.apps.profiles.models import Notification
+from authors.apps.article.models import Article
 
 
 class BaseTestCase(APITestCase):
@@ -84,7 +85,7 @@ class BaseTestCase(APITestCase):
         self.add_credentials(res.data["token"])
 
     def authorize_user_reg(self):
-        res = self.login_user(new_user)
+        res = self.login_user(user_login)
         self.add_credentials(res.data["token"])
 
     def authorize_user2(self):
@@ -198,3 +199,14 @@ class BaseTestCase(APITestCase):
         url = reverse('report_article', kwargs={'pk': id})
         response = self.client.post(url, data=report_data, format='json')
         return response
+    def followers_and_following(self):
+        res = self.register_user(new_user_2)
+        self.authorize_user()
+        self.client.post(reverse('user_follow', kwargs={'username': 'John'}))
+
+        return res
+
+    def create_article_for_liking(self):
+        slug = self.slugger2()
+        pk = Article.objects.get(slug=slug).pk
+        return pk
