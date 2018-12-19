@@ -29,6 +29,8 @@ class CommentSerializer(Validate_method, serializers.ModelSerializer):
     end_index_position = serializers.IntegerField(write_only=True)
     start_index_position = serializers.IntegerField(write_only=True)
     selected_text = serializers.CharField(write_only=True)
+    likes = serializers.SerializerMethodField()
+    dislikes = serializers.SerializerMethodField()
 
     error_message = {"message": 'Please insert comment'}
 
@@ -37,7 +39,7 @@ class CommentSerializer(Validate_method, serializers.ModelSerializer):
         fields = ('id', 'body', 'commented_by', 'created_at', 'updated_at',
                   'replies', 'parent', 'highlighted_section',
                   'start_index_position', 'end_index_position',
-                  'selected_text')
+                  'selected_text', 'likes', 'dislikes')
 
     def get_is_parent(self, object):
         if not object.is_parent:
@@ -54,6 +56,15 @@ class CommentSerializer(Validate_method, serializers.ModelSerializer):
         if body is None:
             raise serializers.ValidationError('Please insert comment')
         return data
+
+    # Gets all the articles likes
+    def get_likes(self, instance):
+        return instance.votes.likes().count()
+
+    # # Gets all the articles dislikes
+    def get_dislikes(self, instance):
+        return instance.votes.dislikes().count()
+
 
 class CommentChildSerializer(Validate_method, serializers.ModelSerializer):
     """
