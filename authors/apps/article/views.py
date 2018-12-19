@@ -1,11 +1,13 @@
+import os
 from django.http import Http404
-from rest_framework import status, generics
+from django.core.mail import send_mail
 from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import Http404, get_object_or_404
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import (AllowAny, IsAuthenticated, 
+                                        IsAuthenticatedOrReadOnly, IsAdminUser)
 from rest_framework.response import Response
 
 from authors.apps.article.exceptions import (NotFoundException)
@@ -44,7 +46,7 @@ class ArticleAPIView(generics.CreateAPIView):
 
 
 class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     renderer_classes = (ArticleJSONRenderer, )
     serializer_class = ArticleSerializer
     lookup_field = "slug"
@@ -110,7 +112,7 @@ class ArticleRetrieveAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response({
             "detail": "Article deleted."
         },
-                        status=status.HTTP_204_NO_CONTENT)
+            status=status.HTTP_204_NO_CONTENT)
 
 
 class RatingsView(generics.GenericAPIView):
@@ -363,3 +365,83 @@ class ChoicesView(generics.GenericAPIView):
         serializer = ArticleSerializer(obj)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+class ShareArticleViaFacebookAPIView(generics.CreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs["slug"]
+
+        try:
+            Article.objects.get(slug=slug)
+            base_url = "https://www.facebook.com/sharer/sharer.php?u="
+            url_param = os.environ.get(
+                'BASE_URL', 'http://127.0.0.1:8000/api/articles/{}'.format(slug))
+            url_link = base_url + url_param
+            return Response(
+                {
+                    "message": "Article successfully shared on facebook",
+                    "link": url_link
+                },
+                status=status.HTTP_200_OK
+            )
+        except:
+            return Response({
+                "message": "Article not found. Please try again"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+class ShareArticleViaTwitterAPIView(generics.CreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs["slug"]
+        try:
+            Article.objects.get(slug=slug)
+            base_url = "https://twitter.com/home?status=Authors%20Heaven%20has%20shared%20an%20article%20"
+            url_param = os.environ.get(
+                'BASE_URL', 'http://127.0.0.1:8000/api/articles/{}'.format(slug))
+            url_link = base_url + url_param
+            return Response(
+                {
+                    "message": "Twitter link",
+                    "link": url_link
+                },
+                status=status.HTTP_200_OK
+            )
+        except:
+            return Response({
+                "message": "Article not found. Please try again"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+class ShareArticleViaEmailView(generics.CreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_field = "slug"
+
+    def post(self, request, *args, **kwargs):
+
+        slug = self.kwargs["slug"]
+        try:
+            Article.objects.get(slug=slug)
+            url_param = os.environ.get(
+                'BASE_URL', 'http://127.0.0.1:8000/api/articles/{}'.format(slug))
+
+            sending_email = os.getenv(
+                "EMAIL_HOST_USER", "teamposeidon12@gmail.com")
+            recipient_email = request.user.email
+            subject = "Authors Haven article link"
+            body = " Click here to view the shared article {}/".format(
+                url_param)
+            send_mail(subject, body, sending_email, [
+                      recipient_email], fail_silently=False)
+
+            return Response(
+                {
+                    "message": "Article successfully shared. Please check your email to view the article"
+                },
+                status=status.HTTP_200_OK,
+            )
+        except:
+            return Response({
+                "message": "Article not found. Please try again"
+            }, status=status.HTTP_404_NOT_FOUND)
