@@ -5,10 +5,15 @@ from django.conf.urls import url
 from django.urls import path
 
 from .views import (ArticleAPIView, ArticleListView, ArticleRetrieveAPIView,
-                    BookmarksAPIView, FavouritesAPIView, RatingsView,
-                    ReportAPIViews, ReportArticleView, ReportList, ChoicesView)
+                    BookmarksAPIView, ReportAPIViews, ReportArticleView,
+                    ReportList, ChoicesView,
+                    RatingsView, FavouritesAPIView,
+                    ShareArticleViaFacebookAPIView,
+                    ShareArticleViaTwitterAPIView,
+                    ShareArticleViaEmailView,)
 from .models import LikeDislike, LikeDislikeManager
 from .models import Article
+
 
 urlpatterns = [
     # article urls
@@ -60,4 +65,16 @@ urlpatterns = [
             vote_type=LikeDislike.DISLIKE,
             manager=LikeDislikeManager),
         name='article_dislike'),
+    path('<slug>/favourite/',
+         FavouritesAPIView.as_view(), name="favourite"),
+    path('<slug>/favourite/',
+         FavouritesAPIView.as_view(), name="undo_favourite"),
+    # social share
+    path('<slug>/facebook',
+         ShareArticleViaFacebookAPIView.as_view(), name='share_article_via_facebook'),
+    path('<slug>/twitter',
+         ShareArticleViaTwitterAPIView.as_view(), name='share_article_via_twitter'),
+    path('<slug>/email',
+         ShareArticleViaEmailView.as_view(), name='share_article_via_email'),
+
 ]
