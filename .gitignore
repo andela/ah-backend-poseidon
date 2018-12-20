@@ -97,8 +97,5 @@ db.sqlite3
 #vscode
 .vscode
 
-#migrations
-migrations/
-
 #binary file
 .DS_Store

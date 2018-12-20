@@ -88,7 +88,7 @@ class HighlightSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('end_index_position', 'start_index_position',
                   'selected_text')
-        fields = ('body', 'commented_by', 'created_at', 'updated_at', 'parent')
+        # fields = ('body', 'commented_by', 'created_at', 'updated_at', 'parent')
 
 
 class CommentHistorySerializer(serializers.ModelSerializer):
