@@ -96,7 +96,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'ahdb'),
         'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('PASSWORD', '1460'),
+        'PASSWORD': os.environ.get('PASSWORD', ''),
         'HOST': os.environ.get('HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5432'),
     }
@@ -219,9 +219,9 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'teamposeidon12@gmail.com'
 EMAIL_HOST_PASSWORD = '@poseidon12'
 
-#reading time configurations
+# reading time configurations
 
 # a measure of words proccesed in a minute
 WORD_PER_MINUTE = 200
-#definition of each word is standardized to be five characters long.
+# definition of each word is standardized to be five characters long.
 WORD_LENGTH = 5
