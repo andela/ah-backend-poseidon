@@ -298,6 +298,7 @@ class ReportAPIViews(generics.GenericAPIView):
         query.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # update violation to true
     def put(self, request, pk):
         query = check_if_report_exists(Report, pk)
         serializer = ReportSerializer(query)
@@ -305,9 +306,11 @@ class ReportAPIViews(generics.GenericAPIView):
         query.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    # delete report
     def delete(self, request, pk):
         query = check_if_report_exists(Report, pk)
-        query.delete()
+        article = Article.objects.get(pk=query.article_id)
+        article.delete()
         return Response({
             "details": "Report has been deleted"
         },
