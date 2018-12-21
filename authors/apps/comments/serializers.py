@@ -96,7 +96,6 @@ class CommentHistorySerializer(serializers.ModelSerializer):
     This class handles the history of the comment edited
     """
 
-    updated_at = serializers.ReadOnlyField(source='updated_at.username')
     parent = serializers.ReadOnlyField(source='commented_by.parent')
 
     class Meta:
