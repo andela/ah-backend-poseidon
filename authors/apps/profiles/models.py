@@ -75,8 +75,8 @@ class Notification(models.Model):
     and sending of notifications to users
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    type = models.CharField(max_length=20)
-    body = models.CharField(max_length=200)
+    type = models.CharField(max_length=255)
+    body = models.CharField(max_length=255)
     status = models.BooleanField(default=False)
 
     def __str__(self):
