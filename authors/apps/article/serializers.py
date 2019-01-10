@@ -25,7 +25,7 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     slug = serializers.CharField(read_only=True)
     user_rating = serializers.CharField(
         source="author.average_rating", required=False)
-    tags = TagListSerializerField()
+    tags = TagListSerializerField(required=False)
     favourites_count = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
