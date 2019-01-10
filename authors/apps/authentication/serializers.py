@@ -1,14 +1,12 @@
-from django.contrib.auth import authenticate
+import os
 
+from django.contrib.auth import authenticate
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from django.shortcuts import get_object_or_404
-
-from django.core.mail import send_mail
-
-from .models import User
-
 from ..profiles.serializers import ProfileSerializer
+from .models import User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -201,11 +199,12 @@ class ResetPasswordSerializer(serializers.Serializer):
         recipient = user.email
         subject = "Authors Heven. Reset your password"
         token = user.token
-        url = "http://127.0.0.1:8000/api/password-reset/"
+        url_param = os.environ.get(
+            'BASE_URL', 'http://127.0.0.1:8000/api')
         body = " Click on this link to reset your password {}{}/".format(
-            url, token)
+            url_param + '/password-reset/', token)
         send_mail(subject, body, 'from', [
-                  recipient], fail_silently=False)
+                    recipient], fail_silently=False)
         return {
             'email': user,
         }
