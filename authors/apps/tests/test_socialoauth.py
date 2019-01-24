@@ -56,9 +56,9 @@ class SocialOauthTest(BaseTest):
         client_id = self.application.client_id
         client_secret = self.application.client_secret
         backend = 'facebook'
-        t1 = 'EAAKEAXI4rwQBAJGobgOk8K8xDGpnZBqKTClDkFqxPVy6ZBdnkAXXBHZAZCj'
-        t2 = 'DXmXx7P14trdtzBRcWTpYmrB96elY5Dkmdney0ADhuX06BeZAHZC3Jh7zbKEm'
-        token = t1 + t2 + 'apkcwr08UaL6TToRvfYIBlzylApUVJNIUmAXAn0KIZD'
+        t1 = 'EAAKEAXI4rwQBAKZCZBCbLXDMnXlHxgW6lNxjJrRItYEqRbpwWkZCICDH68gXe'
+        t2 = 'vlJSbYinoaidW0C3AJYyyypuE4Ee6wXyToKzZBGhJUA9EdAocX8c21Ii1ZAh0wbh'
+        token = t1 + t2 + '2KSwxHgWj3X37UWP4iCDdLF7YF5XeF0lVAnKtCld2ZBbrbwZDZD'
         base_url = '/api/auth/convert-token?grant_type=convert_token&client'
         url = base_url + '_id=%s&client_secret=%s&backend=%s&token=%s' % (
             client_id, client_secret, backend, token)
