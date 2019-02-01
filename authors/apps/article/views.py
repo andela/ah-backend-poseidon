@@ -435,7 +435,7 @@ class ShareArticleViaEmailView(generics.CreateAPIView):
         try:
             Article.objects.get(slug=slug)
             url_param = os.environ.get(
-                'BASE_URL', 'http://127.0.0.1:8000/api')
+                'FRONTEND_URL', 'http://127.0.0.1:8000/api')
 
             url_param = url_param + '/articles/{}'.format(slug)
             sending_email = os.getenv(settings.EMAIL_HOST_USER)
