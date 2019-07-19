@@ -63,4 +63,4 @@ class SocialOauthTest(BaseTest):
         url = base_url + '_id=%s&client_secret=%s&backend=%s&token=%s' % (
             client_id, client_secret, backend, token)
         response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
